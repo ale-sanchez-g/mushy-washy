@@ -1,0 +1,16 @@
+{
+  "name": "mushgame",
+  "version": "1.0.0",
+  "description": "game using nodejs to 1 player to grown as big as  possiblie by eating only blue mushrooms.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sanchez Kerr Video Games",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "phaser": "^3.80.1"
+  }
+}
