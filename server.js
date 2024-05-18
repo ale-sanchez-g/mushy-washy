@@ -1,11 +1,26 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const LaunchDarkly = require('launchdarkly-node-server-sdk');
 
 const app = express();
 const server = http.createServer(app);
+// dynamic user key for context
+const uuid = require('uuid');
+const userKey = uuid.v4();
+
 
 const PORT = process.env.PORT || 3000;
+const LD_SDK_KEY = process.env.LD_SDK_KEY;
+
+// Initialize the LaunchDarkly client
+const ldClient = LaunchDarkly.init(LD_SDK_KEY);
+let context = {
+  key: userKey,
+  custom: {
+    groups: 'beta_testers'
+  }
+};
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -13,6 +28,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Route for serving the index.html file
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Route for serving the welcome.html file
+app.get('/welcome', (req, res) => {
+  ldClient.variation('welcome-page', context ,false).then(showFeature => {
+    if (showFeature) {
+      console.log('Showing feature for user welcome page');
+      res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
+    } else {
+      res.redirect('/');
+    }
+  });
 });
 
 server.listen(PORT, () => {
