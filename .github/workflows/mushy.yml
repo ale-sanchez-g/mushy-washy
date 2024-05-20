@@ -37,3 +37,9 @@ jobs:
           test-results/**/*.xml
           test-results/**/*.trx
           test-results/**/*.json
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+        files: ./coverage/lcov.info
+        fail_ci_if_error: true # optional
