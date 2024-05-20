@@ -28,3 +28,9 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm test
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        files: ./test-results/junit/*.xml
