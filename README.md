@@ -31,6 +31,22 @@ The server uses Express.js and serves static files from the 'public' directory.
 
 The server uses the LaunchDarkly SDK for feature flagging. Each user is assigned a unique key and is part of the 'beta_testers' group. Feature flags can be used to enable or disable features for specific users or groups of users.
 
+## Github Actions
+
+Configuring the default GITHUB_TOKEN permissions
+
+By default, when you create a new repository in your personal account, GITHUB_TOKEN only has read access for the contents and packages scopes. If you create a new repository in an organization, the setting is inherited from what is configured in the organization settings.
+
+On GitHub.com, navigate to the main page of the repository.
+
+Under your repository name, click  Settings. If you cannot see the "Settings" tab, select the  dropdown menu, then click Settings.
+
+Screenshot of a repository header showing the tabs. The "Settings" tab is highlighted by a dark orange outline.
+In the left sidebar, click  Actions, then click General.
+
+Under "Workflow permissions", choose whether you want the GITHUB_TOKEN to have read and write access for all scopes (the permissive setting), or just read access for the contents and packages scopes (the restricted setting).
+
+Click Save to apply the settings.
 
 ## Contributing
 
