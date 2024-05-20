@@ -17,7 +17,15 @@
           "outputDirectory": "./test-results/junit"
         }
       ]
-    ]
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 22,
+        "functions": 12,
+        "lines": 21,
+        "statements": 20
+      }
+    }
   },
   "author": "Sanchez Kerr Video Games",
   "license": "MIT",
