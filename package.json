@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
   },
   "author": "Sanchez Kerr Video Games",
   "license": "MIT",
@@ -13,5 +16,9 @@
     "express": "^4.19.2",
     "launchdarkly-node-server-sdk": "^7.0.4",
     "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   }
 }
