@@ -30,4 +30,4 @@ async function getUserContext() {
   }
 
 // Export the function for import in other files
-export { getUserContext };
+module.exports = { getUserContext };
