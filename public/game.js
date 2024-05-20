@@ -1,4 +1,4 @@
-window.onload = function() {
+window.onload = function() {    
     const config = {
       type: Phaser.AUTO,
       width: window.innerWidth,
