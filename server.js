@@ -42,6 +42,9 @@ app.get('/welcome', (req, res) => {
   });
 });
 
+// Serve the modules from public/modules folder
+app.use('/modules', express.static(path.join(__dirname, 'public', 'modules')));
+
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
