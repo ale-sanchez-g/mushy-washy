@@ -1,4 +1,4 @@
-window.onload = function() {
+window.onload = function() {    
     const config = {
       type: Phaser.AUTO,
       width: window.innerWidth,
@@ -118,6 +118,16 @@ window.onload = function() {
             let text = this.add.text(0, 0, "You lost!", style);
             text.setOrigin(0.5, 0.5);
             text.setPosition(this.scale.width / 2, this.scale.height / 2);
+
+            //add link back to welcome page
+            let lnkStyle = { font: "bold 32px Arial", fill: "blue", boundsAlignH: "center", boundsAlignV: "middle" };
+            let link = this.add.text(0, 0, "Click back to Welcome Page");
+            link.setOrigin(0.5, 0.5);
+            link.setPosition(this.scale.width / 2, this.scale.height / 2 + 50);
+            link.setInteractive();
+            link.on('pointerdown', () => {
+                window.location.href = '/welcome';
+            });
         }
 
         this.physics.add.collider(basket, mushroom, collectMushroom, null, this);

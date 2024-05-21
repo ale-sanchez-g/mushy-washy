@@ -5,7 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blue Mushroom Game</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+  <style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #000;
+    }
+    canvas {
+        border: 1px solid #fff;
+    }
+</style>
   <script src="game.js"></script>
+  <script type="module">
+    import { getUserContext } from '/modules/contextGenerator.js';
+    getUserContext();
+  </script>
   <style>
     body { margin: 0; }
   </style>
