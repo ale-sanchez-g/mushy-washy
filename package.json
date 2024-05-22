@@ -30,8 +30,8 @@
   "author": "Sanchez Kerr Video Games",
   "license": "MIT",
   "dependencies": {
+    "@launchdarkly/node-server-sdk": "^9.4.2",
     "express": "^4.19.2",
-    "launchdarkly-node-server-sdk": "^7.0.4",
     "phaser": "^3.80.1"
   },
   "devDependencies": {

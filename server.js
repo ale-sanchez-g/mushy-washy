@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const LaunchDarkly = require('launchdarkly-node-server-sdk');
+const LaunchDarkly = require('@launchdarkly/node-server-sdk');
 
 const app = express();
 const server = http.createServer(app);
@@ -11,7 +11,7 @@ const userKey = uuid.v4();
 
 
 const PORT = process.env.PORT || 3000;
-const LD_SDK_KEY = process.env.LD_SDK_KEY;
+const LD_SDK_KEY = process.env.LD_SDK_KEY || "YOUR_SDK_KEY";
 
 // Initialize the LaunchDarkly client
 const ldClient = LaunchDarkly.init(LD_SDK_KEY);
@@ -32,13 +32,15 @@ app.get('/', (req, res) => {
 
 // Route for serving the welcome.html file
 app.get('/welcome', (req, res) => {
-  ldClient.variation('welcome-page', context ,false).then(showFeature => {
-    if (showFeature) {
-      console.log('Showing feature for user welcome page');
-      res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
-    } else {
-      res.redirect('/');
-    }
+    ldClient.variation('welcome-page', context, false,
+      (err, showFeature) => {
+        if (showFeature) {
+          // the code to run if the feature is off
+          console.log('Showing feature for user welcome page');
+          res.sendFile(path.join(__dirname, 'public', 'welcome.html'));    
+        } else {
+          res.redirect('/');
+        }
   });
 });
 

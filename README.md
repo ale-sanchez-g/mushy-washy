@@ -19,6 +19,12 @@ To install the game, follow these steps:
 3. Install the dependencies: `npm install`
 4. Start the server: `npm start`
 
+```bash
+source .env
+npm test
+LD_SDK_KEY=$LD_SDK_KEY npm start
+```
+
 ## Usage
 
 To play the game, open the `welcome.html` file in your web browser.
