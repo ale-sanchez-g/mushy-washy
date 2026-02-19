@@ -13,7 +13,9 @@ window.onload = function() {
     activeOrders: [],
     isPaused: false,
     gamePhase: 'sloSelection', // sloSelection, playing, gameOver
-    spawnTimerId: null
+    spawnTimerId: null,
+    levelStartTimerId: null,
+    levelEndTimerId: null
   };
 
   // Phaser game configuration
@@ -32,6 +34,7 @@ window.onload = function() {
   const game = new Phaser.Game(config);
   let graphics;
   let texts = {};
+  let sloSelectionElements = []; // Store references to SLO selection UI elements
 
   function create() {
     graphics = this.add.graphics();
@@ -43,6 +46,7 @@ window.onload = function() {
   function showSLOSelection() {
     const scene = this;
     graphics.clear();
+    sloSelectionElements = []; // Reset the array
 
     // Title
     const title = scene.add.text(400, 50, 'Barista Error Budget Game', {
@@ -51,6 +55,7 @@ window.onload = function() {
       fill: '#fff',
       align: 'center'
     }).setOrigin(0.5);
+    sloSelectionElements.push(title);
 
     // Subtitle
     const subtitle = scene.add.text(400, 100, 'Choose Your SLO Target', {
@@ -58,6 +63,7 @@ window.onload = function() {
       fill: '#fff',
       align: 'center'
     }).setOrigin(0.5);
+    sloSelectionElements.push(subtitle);
 
     // Description
     const description = scene.add.text(400, 140, 
@@ -67,6 +73,7 @@ window.onload = function() {
       align: 'center',
       wordWrap: { width: 700 }
     }).setOrigin(0.5);
+    sloSelectionElements.push(description);
 
     // Create SLO option buttons
     BaristaConfig.sloOptions.forEach((slo, index) => {
@@ -76,6 +83,7 @@ window.onload = function() {
       const button = scene.add.rectangle(400, y, 600, 70, 0x3498db, 0.8);
       button.setInteractive({ useHandCursor: true });
       button.setStrokeStyle(3, 0xffffff);
+      sloSelectionElements.push(button);
 
       // Button text
       const buttonText = scene.add.text(400, y - 15, slo.name, {
@@ -83,25 +91,32 @@ window.onload = function() {
         fontWeight: 'bold',
         fill: '#fff'
       }).setOrigin(0.5);
+      sloSelectionElements.push(buttonText);
 
       const buttonDesc = scene.add.text(400, y + 15, slo.description, {
         fontSize: '14px',
         fill: '#ecf0f1'
       }).setOrigin(0.5);
+      sloSelectionElements.push(buttonDesc);
 
       // Hover effects
       button.on('pointerover', () => {
+        if (gameState.gamePhase !== 'sloSelection') return;
         button.setFillStyle(0x2980b9);
         button.setScale(1.05);
       });
 
       button.on('pointerout', () => {
+        if (gameState.gamePhase !== 'sloSelection') return;
         button.setFillStyle(0x3498db);
         button.setScale(1.0);
       });
 
       // Click handler
       button.on('pointerdown', () => {
+        // Only process click if we're still in SLO selection phase
+        if (gameState.gamePhase !== 'sloSelection') return;
+        
         gameState.selectedSLO = slo;
         gameState.errorBudgetRemaining = slo.errorBudget;
         startGame.call(scene);
@@ -112,11 +127,22 @@ window.onload = function() {
   function startGame() {
     const scene = this;
     
-    // Clear selection screen
-    scene.children.removeAll();
+    // Change game phase immediately to prevent any more clicks
+    gameState.gamePhase = 'playing';
+    
+    // Destroy all SLO selection elements and disable their interactivity
+    sloSelectionElements.forEach(element => {
+      if (element.disableInteractive) {
+        element.disableInteractive();
+      }
+      element.destroy();
+    });
+    sloSelectionElements = [];
+    
+    // Clear any remaining graphics
     graphics.clear();
 
-    gameState.gamePhase = 'playing';
+    // Reset game state
     gameState.currentLevel = 0;
     gameState.totalOrders = 0;
     gameState.successfulOrders = 0;
@@ -194,10 +220,21 @@ window.onload = function() {
   function startLevel() {
     const scene = this;
     
-    // Cancel any pending spawn timer from previous level
+    // Don't start level if game is over
+    if (gameState.gamePhase === 'gameOver') return;
+    
+    // Cancel any pending timers from previous level
     if (gameState.spawnTimerId) {
       gameState.spawnTimerId.remove();
       gameState.spawnTimerId = null;
+    }
+    if (gameState.levelStartTimerId) {
+      gameState.levelStartTimerId.remove();
+      gameState.levelStartTimerId = null;
+    }
+    if (gameState.levelEndTimerId) {
+      gameState.levelEndTimerId.remove();
+      gameState.levelEndTimerId = null;
     }
     
     const level = BaristaConfig.levels[gameState.currentLevel];
@@ -219,14 +256,25 @@ window.onload = function() {
       padding: { x: 30, y: 20 }
     }).setOrigin(0.5);
 
-    scene.time.delayedCall(2000, () => {
+    gameState.levelStartTimerId = scene.time.delayedCall(2000, () => {
+      // Check if game ended while waiting
+      if (gameState.gamePhase === 'gameOver') {
+        if (levelText && levelText.active) {
+          levelText.destroy();
+        }
+        return;
+      }
+      
       levelText.destroy();
       
       // Start spawning orders
       spawnOrders.call(scene, level);
       
       // End level after duration
-      scene.time.delayedCall(level.duration, () => {
+      gameState.levelEndTimerId = scene.time.delayedCall(level.duration, () => {
+        // Check if game ended during level
+        if (gameState.gamePhase === 'gameOver') return;
+        
         // Move to next level
         gameState.currentLevel++;
         startLevel.call(scene);
@@ -475,6 +523,20 @@ window.onload = function() {
     const scene = this;
     gameState.gamePhase = 'gameOver';
 
+    // Cancel all active timers to prevent level popups
+    if (gameState.spawnTimerId) {
+      gameState.spawnTimerId.remove();
+      gameState.spawnTimerId = null;
+    }
+    if (gameState.levelStartTimerId) {
+      gameState.levelStartTimerId.remove();
+      gameState.levelStartTimerId = null;
+    }
+    if (gameState.levelEndTimerId) {
+      gameState.levelEndTimerId.remove();
+      gameState.levelEndTimerId = null;
+    }
+
     // Clear active orders
     gameState.activeOrders.forEach(order => {
       order.bg.destroy();
@@ -593,7 +655,7 @@ window.onload = function() {
       // Clean up input element
       cleanupInput();
       
-      scene.scene.restart();
+      // Reset game state
       gameState = {
         selectedSLO: null,
         currentLevel: 0,
@@ -606,9 +668,14 @@ window.onload = function() {
         activeOrders: [],
         isPaused: false,
         gamePhase: 'sloSelection',
-        spawnTimerId: null
+        spawnTimerId: null,
+        levelStartTimerId: null,
+        levelEndTimerId: null
       };
       texts = {};
+      sloSelectionElements = [];
+      
+      scene.scene.restart();
     });
 
     const backBtn = scene.add.rectangle(500, 550, 180, 50, 0x95a5a6);
