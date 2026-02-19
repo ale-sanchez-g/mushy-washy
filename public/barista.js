@@ -49,7 +49,7 @@ window.onload = function() {
     sloSelectionElements = []; // Reset the array
 
     // Title
-    const title = scene.add.text(400, 50, 'Barista Error Budget Game', {
+    const title = scene.add.text(400, 50, 'Barista Promise', {
       fontSize: '32px',
       fontWeight: 'bold',
       fill: '#fff',
@@ -58,7 +58,7 @@ window.onload = function() {
     sloSelectionElements.push(title);
 
     // Subtitle
-    const subtitle = scene.add.text(400, 100, 'Choose Your SLO Target', {
+    const subtitle = scene.add.text(400, 100, 'What do you value more?', {
       fontSize: '24px',
       fill: '#fff',
       align: 'center'
@@ -67,7 +67,7 @@ window.onload = function() {
 
     // Description
     const description = scene.add.text(400, 140, 
-      'Higher SLO = Less room for errors = Harder to experiment!', {
+      'Higher % = Less room for errors = Harder to experiment! \n THIS IS AN SLO', {
       fontSize: '16px',
       fill: '#ecf0f1',
       align: 'center',
@@ -166,7 +166,7 @@ window.onload = function() {
 
     // SLO Info
     texts.sloInfo = scene.add.text(20, 15, 
-      `SLO Target: ${gameState.selectedSLO.name}`, {
+      `Our Promise (SLO): ${gameState.selectedSLO.name}`, {
       fontSize: '20px',
       fontWeight: 'bold',
       fill: '#3498db'
@@ -174,14 +174,14 @@ window.onload = function() {
 
     // Error Budget
     texts.errorBudget = scene.add.text(20, 45, 
-      `Error Budget: ${gameState.errorBudgetRemaining}`, {
+      `Allowed mistakes (Error Budget): ${gameState.errorBudgetRemaining}`, {
       fontSize: '18px',
       fill: getErrorBudgetColor()
     });
 
     // Current SLO Performance
     texts.currentSLO = scene.add.text(20, 70, 
-      `Current SLO: ${(gameState.currentSLO * 100).toFixed(2)}%`, {
+      `Keeping my promise: ${(gameState.currentSLO * 100).toFixed(2)}%`, {
       fontSize: '18px',
       fill: '#2ecc71'
     });
@@ -210,7 +210,7 @@ window.onload = function() {
 
     // Instructions
     texts.instructions = scene.add.text(400, 115, 
-      'Click on orders to complete them! Faster = Better!', {
+      'If you take too long, it will affect your promise!', {
       fontSize: '16px',
       fill: '#ecf0f1',
       align: 'center'
@@ -481,7 +481,7 @@ window.onload = function() {
     if (!texts.errorBudget) return;
 
     // Update error budget
-    texts.errorBudget.setText(`Error Budget: ${gameState.errorBudgetRemaining}`);
+    texts.errorBudget.setText(`Allowed mistakes (Error Budget): ${gameState.errorBudgetRemaining}`);
     texts.errorBudget.setColor(getErrorBudgetColor());
 
     // Update current SLO
@@ -489,7 +489,7 @@ window.onload = function() {
       ? gameState.successfulOrders / gameState.totalOrders 
       : 1.0;
     gameState.currentSLO = currentSLO;
-    texts.currentSLO.setText(`Current SLO: ${(currentSLO * 100).toFixed(2)}%`);
+    texts.currentSLO.setText(`Keeping the promise: ${(currentSLO * 100).toFixed(2)}%`);
     
     // Color based on meeting SLO
     if (currentSLO >= gameState.selectedSLO.value) {
