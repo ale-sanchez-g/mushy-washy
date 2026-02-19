@@ -552,7 +552,7 @@ window.onload = function() {
     overlay.setInteractive(); // Block clicks from passing through
 
     // Title
-    const title = scene.add.text(400, 150, 
+    const title = scene.add.text(400, 80, 
       won ? '🎉 Congratulations!' : '💔 Game Over', {
       fontSize: '48px',
       fontWeight: 'bold',
@@ -563,10 +563,10 @@ window.onload = function() {
     const message = won 
       ? 'You completed all levels!'
       : gameState.errorBudgetRemaining <= 0
-        ? 'Error budget exhausted!'
+        ? 'You broke the promise!'
         : 'Better luck next time!';
 
-    const messageText = scene.add.text(400, 220, message, {
+    const messageText = scene.add.text(400, 145, message, {
       fontSize: '24px',
       fill: '#fff'
     }).setOrigin(0.5);
@@ -581,23 +581,23 @@ window.onload = function() {
     ];
 
     stats.forEach((stat, index) => {
-      scene.add.text(400, 280 + index * 30, stat, {
-        fontSize: '18px',
+      scene.add.text(400, 195 + index * 28, stat, {
+        fontSize: '16px',
         fill: '#ecf0f1'
       }).setOrigin(0.5);
     });
 
     // Lesson learned
-    const lesson = scene.add.text(400, 420, 
+    const lesson = scene.add.text(400, 345, 
       'Higher SLO targets leave less room for errors,\nmaking it harder to experiment and innovate!', {
-      fontSize: '16px',
+      fontSize: '14px',
       fill: '#f39c12',
       align: 'center',
       fontStyle: 'italic'
     }).setOrigin(0.5);
 
     // Player name input
-    const nameLabel = scene.add.text(400, 470, 'Enter your name:', {
+    const nameLabel = scene.add.text(400, 410, 'Enter your name:', {
       fontSize: '16px',
       fill: '#fff'
     }).setOrigin(0.5);
@@ -622,7 +622,7 @@ window.onload = function() {
     const canvas = scene.sys.game.canvas;
     const canvasRect = canvas.getBoundingClientRect();
     inputElement.style.left = (canvasRect.left + 300) + 'px';
-    inputElement.style.top = (canvasRect.top + 490) + 'px';
+    inputElement.style.top = (canvasRect.top + 435) + 'px';
     
     document.body.appendChild(inputElement);
     inputElement.focus();
@@ -635,11 +635,11 @@ window.onload = function() {
     };
 
     // Buttons
-    const playAgainBtn = scene.add.rectangle(300, 550, 180, 50, 0x3498db);
+    const playAgainBtn = scene.add.rectangle(300, 500, 180, 50, 0x3498db);
     playAgainBtn.setInteractive({ useHandCursor: true });
     playAgainBtn.setStrokeStyle(2, 0xffffff);
 
-    const playAgainText = scene.add.text(300, 550, 'Play Again', {
+    const playAgainText = scene.add.text(300, 500, 'Play Again', {
       fontSize: '20px',
       fontWeight: 'bold',
       fill: '#fff'
@@ -678,11 +678,11 @@ window.onload = function() {
       scene.scene.restart();
     });
 
-    const backBtn = scene.add.rectangle(500, 550, 180, 50, 0x95a5a6);
+    const backBtn = scene.add.rectangle(500, 500, 180, 50, 0x95a5a6);
     backBtn.setInteractive({ useHandCursor: true });
     backBtn.setStrokeStyle(2, 0xffffff);
 
-    const backText = scene.add.text(500, 550, 'Back to Menu', {
+    const backText = scene.add.text(500, 500, 'Back to Menu', {
       fontSize: '20px',
       fontWeight: 'bold',
       fill: '#fff'
