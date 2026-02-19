@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mushy Washy - Game Collection</title>
+    <link rel="icon" type="image/jpeg" href="assets/blueMushroom.jpeg">
     <link rel="stylesheet" href="assets/style.css">
     <script type="module">
         import { getUserContext } from './modules/contextGenerator.js';
@@ -15,23 +16,50 @@
         <h1>Welcome to Mushy Washy</h1>
     </header>
     <main>
-        <!-- Add mushroom image -->
+        <!-- Introduction section -->
         <div class="center">
-            <img src="assets/blueMushroom.jpeg" alt="Blue Mushroom">
-        </div>        
-        <p>This is our home page. We're glad to have you here!</p>
-        <p>The game instructions are:</p>
-        <p>Press and hold the up key to move your basket and collect your mushrooms</p>
-        <p>The more mushrooms you collect the heavier your basket</p>
-        <div class="center">
-            <button onclick="window.location.href = 'mushroom-game.html';">Play Mushroom Game</button>
+            <img src="assets/blueMushroom.jpeg" alt="Blue Mushroom artwork for Mushy Washy games">
         </div>
-        <h2 style="text-align: center; color: white; margin-top: 40px;">🎓 SRE Education Game</h2>
-        <p style="text-align: center;">Learn about Error Budgeting with our Barista Game!</p>
-        <div class="center">
-            <button onclick="window.location.href = 'barista.html';">Play Barista Game</button>
-        </div>
-        </main>
+        
+        <section>
+            <p>
+                <strong>Mushy Washy</strong>, where you learn Site Reliability Engineering (SRE) 
+                concepts through fun, interactive games! SRE is about keeping systems running smoothly and 
+                knowing when it's okay to take risks. Whether you're new to SRE or want to sharpen your skills, 
+                our games make learning engaging and practical.
+            </p>
+        </section>
+
+        <!-- Mushroom Game Section -->
+        <h2>🍄 Mushroom Collection Game</h2>
+        <section>
+            <p>Test your precision and timing! Collect mushrooms in your basket while managing its weight. 
+            This game teaches you about <strong>resource management</strong> a key concept in SRE where you balance 
+            system capacity and demand.</p>
+            <p><strong>How to play:</strong> Press and hold the up key to move your basket and collect mushrooms. 
+            The more mushrooms you collect, the heavier your basket becomes!</p>
+            <div class="center">
+                <div class="button-card" role="button" tabindex="0" onclick="window.location.href = 'mushroom-game.html';" onkeypress="if(event.key==='Enter'||event.key===' ') window.location.href = 'mushroom-game.html';">
+                    <h3>Play Mushroom Game</h3>
+                    <p>Test your skills!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Barista Game Section -->
+        <h2>☕ Barista Game: Error Budgeting</h2>
+        <section>
+            <p>Run a coffee shop and learn about <strong>error budgeting</strong> one of the most important 
+            SRE concepts. Your error budget is the acceptable amount of downtime or mistakes you can make before 
+            impacting your business. Make smart decisions to keep your customers happy while building new features!</p>
+            <div class="center">
+                <div class="button-card" role="button" tabindex="0" onclick="window.location.href = 'barista.html';" onkeypress="if(event.key==='Enter'||event.key===' ') window.location.href = 'barista.html';">
+                    <h3>Play Barista Game</h3>
+                    <p>Learn error budgeting!</p>
+                </div>
+            </div>
+        </section>
+    </main>
 </body>
 <script>
   (function () {
