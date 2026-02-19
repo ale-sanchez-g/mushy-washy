@@ -74,3 +74,8 @@ const BaristaConfig = {
     canvasHeight: 600
   }
 };
+
+// Export for Node.js (for testing)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = BaristaConfig;
+}

@@ -1,14 +1,45 @@
-# Blue Mushroom Game
+# Mushy Washy Games
 
 ## Description
 
-Welcome to Mushy Washy! This is a game where you move your basket to collect mushrooms. The more mushrooms you collect, the heavier your basket becomes.
+Welcome to Mushy Washy! A collection of educational games including:
+
+1. **Blue Mushroom Game** - A classic basket collection game
+2. **Barista Error Budget Game** - An SRE education game teaching error budgeting concepts
 
 ![Game Image](public/assets/blueMushroom.jpeg)
 
-## Instructions
+## Games
 
-Press and hold the up key to move your basket and collect your mushrooms.
+### Blue Mushroom Game
+
+Press and hold the up key to move your basket and collect your mushrooms. The more mushrooms you collect, the heavier your basket becomes.
+
+### Barista Error Budget Game 🎓
+
+An educational game designed to teach Site Reliability Engineering (SRE) concepts, specifically error budgeting.
+
+**Game Features:**
+- **Choose Your SLO**: Select from multiple Service Level Objective targets:
+  - 100% - Perfect (No errors allowed)
+  - 99.95% - Very High (5 errors per 10,000 orders)
+  - 99.9% - High (10 errors per 10,000 orders)
+  - 80% - Relaxed (2,000 errors per 10,000 orders)
+
+- **Progressive Difficulty**: Start with simple coffee orders and progress through increasingly complex drinks:
+  - Level 1: Simple orders (Regular Coffee, Black Coffee)
+  - Level 2: Medium complexity (Cappuccino, Latte, Americano)
+  - Level 3-4: Complex specialty drinks (Oat Milk Latte, Double Shot Espresso, Caramel Macchiato)
+
+- **Error Budget Tracking**: Watch your error budget deplete as you fail orders. The game demonstrates how tighter SLOs leave less room for experimentation and mistakes.
+
+- **Speed Progression**: Orders arrive faster as you advance through levels, simulating increased production load.
+
+**Learning Objectives:**
+- Understand the relationship between SLO targets and error budgets
+- Experience how high SLO targets restrict experimentation
+- Learn that lower error budgets make innovation harder
+- See real-time impact of failed requests on system reliability
 
 ## Installation
 
@@ -21,11 +52,21 @@ To install the game, follow these steps:
 
 ## Usage
 
-To play the game, open the `welcome.html` file in your web browser.
+To play the games:
+
+1. Start the server: `npm start`
+2. Open your browser and navigate to:
+   - Welcome page: `http://localhost:3000/welcome`
+   - Blue Mushroom Game: `http://localhost:3000/`
+   - Barista Game: `http://localhost:3000/barista`
 
 ## Server Routes
 
 The server uses Express.js and serves static files from the 'public' directory.
+
+- `/` - Blue Mushroom Game
+- `/welcome` - Welcome page with game selection
+- `/barista` - Barista Error Budget Game
 
 ## Feature Flags
 
