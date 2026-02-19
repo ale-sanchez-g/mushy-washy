@@ -479,6 +479,7 @@ window.onload = function() {
 
     // Game over overlay
     const overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
+    overlay.setInteractive(); // Block clicks from passing through
 
     // Title
     const title = scene.add.text(400, 150, 
@@ -517,7 +518,7 @@ window.onload = function() {
     });
 
     // Lesson learned
-    const lesson = scene.add.text(400, 450, 
+    const lesson = scene.add.text(400, 420, 
       'Higher SLO targets leave less room for errors,\nmaking it harder to experiment and innovate!', {
       fontSize: '16px',
       fill: '#f39c12',
@@ -525,8 +526,46 @@ window.onload = function() {
       fontStyle: 'italic'
     }).setOrigin(0.5);
 
+    // Player name input
+    const nameLabel = scene.add.text(400, 470, 'Enter your name:', {
+      fontSize: '16px',
+      fill: '#fff'
+    }).setOrigin(0.5);
+
+    // Create HTML input element for player name
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.id = 'playerNameInput';
+    inputElement.placeholder = 'Player Name';
+    inputElement.maxLength = 20;
+    inputElement.style.position = 'absolute';
+    inputElement.style.width = '200px';
+    inputElement.style.height = '30px';
+    inputElement.style.fontSize = '16px';
+    inputElement.style.textAlign = 'center';
+    inputElement.style.border = '2px solid #3498db';
+    inputElement.style.borderRadius = '5px';
+    inputElement.style.backgroundColor = '#fff';
+    inputElement.style.color = '#000';
+    
+    // Position the input element relative to the canvas
+    const canvas = scene.sys.game.canvas;
+    const canvasRect = canvas.getBoundingClientRect();
+    inputElement.style.left = (canvasRect.left + 300) + 'px';
+    inputElement.style.top = (canvasRect.top + 490) + 'px';
+    
+    document.body.appendChild(inputElement);
+    inputElement.focus();
+
+    // Store reference to clean up later
+    const cleanupInput = () => {
+      if (inputElement && inputElement.parentNode) {
+        document.body.removeChild(inputElement);
+      }
+    };
+
     // Buttons
-    const playAgainBtn = scene.add.rectangle(300, 520, 180, 50, 0x3498db);
+    const playAgainBtn = scene.add.rectangle(300, 550, 180, 50, 0x3498db);
     playAgainBtn.setInteractive({ useHandCursor: true });
     playAgainBtn.setStrokeStyle(2, 0xffffff);
 
@@ -539,6 +578,13 @@ window.onload = function() {
     playAgainBtn.on('pointerover', () => playAgainBtn.setFillStyle(0x2980b9));
     playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(0x3498db));
     playAgainBtn.on('pointerdown', () => {
+      // Save score before restarting
+      const playerName = inputElement.value.trim() || 'Anonymous';
+      saveScore(playerName, gameState.score, gameState.selectedSLO.name);
+      
+      // Clean up input element
+      cleanupInput();
+      
       scene.scene.restart();
       gameState = {
         selectedSLO: null,
@@ -556,7 +602,7 @@ window.onload = function() {
       texts = {};
     });
 
-    const backBtn = scene.add.rectangle(500, 520, 180, 50, 0x95a5a6);
+    const backBtn = scene.add.rectangle(500, 550, 180, 50, 0x95a5a6);
     backBtn.setInteractive({ useHandCursor: true });
     backBtn.setStrokeStyle(2, 0xffffff);
 
@@ -569,8 +615,55 @@ window.onload = function() {
     backBtn.on('pointerover', () => backBtn.setFillStyle(0x7f8c8d));
     backBtn.on('pointerout', () => backBtn.setFillStyle(0x95a5a6));
     backBtn.on('pointerdown', () => {
+      // Save score before leaving
+      const playerName = inputElement.value.trim() || 'Anonymous';
+      saveScore(playerName, gameState.score, gameState.selectedSLO.name);
+      
+      // Clean up input element
+      cleanupInput();
+      
       window.location.href = 'index.html';
     });
+  }
+
+  // Cookie helper functions
+  function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+  }
+
+  function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+
+  function saveScore(playerName, score, slo) {
+    const scores = getScores();
+    scores.push({
+      playerName: playerName,
+      score: score,
+      slo: slo,
+      date: new Date().toISOString()
+    });
+    // Keep only top 10 scores
+    scores.sort((a, b) => b.score - a.score);
+    if (scores.length > 10) {
+      scores.length = 10;
+    }
+    setCookie('baristaScores', JSON.stringify(scores), 365);
+  }
+
+  function getScores() {
+    const scoresStr = getCookie('baristaScores');
+    return scoresStr ? JSON.parse(scoresStr) : [];
   }
 
   function update() {
