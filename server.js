@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 // Route for serving the welcome.html file
 app.get('/welcome', (req, res) => {
   if (ldClient) {
-    ldClient.variation('welcome-page', context ,false).then(showFeature => {
+    ldClient.variation('welcome-page', context, false).then(showFeature => {
       if (showFeature) {
         console.log('Showing feature for user welcome page');
         res.sendFile(path.join(__dirname, 'public', 'welcome.html'));

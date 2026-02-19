@@ -6,7 +6,7 @@ const BaristaConfig = {
     { name: '100%', value: 1.0, errorBudget: 0, description: 'Perfect - No errors allowed!' },
     { name: '99.95%', value: 0.9995, errorBudget: 5, description: 'Very High - Only 5 errors per 10,000 orders' },
     { name: '99.9%', value: 0.999, errorBudget: 10, description: 'High - 10 errors per 10,000 orders' },
-    { name: '80%', value: 0.80, errorBudget: 200, description: 'Relaxed - 2,000 errors per 10,000 orders' }
+    { name: '80%', value: 0.80, errorBudget: 2000, description: 'Relaxed - 2,000 errors per 10,000 orders' }
   ],
 
   // Coffee order types by complexity
