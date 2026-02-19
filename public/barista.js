@@ -489,7 +489,7 @@ window.onload = function() {
       ? gameState.successfulOrders / gameState.totalOrders 
       : 1.0;
     gameState.currentSLO = currentSLO;
-    texts.currentSLO.setText(`Keeping the promise: ${(currentSLO * 100).toFixed(2)}%`);
+    texts.currentSLO.setText(`Keeping my promise: ${(currentSLO * 100).toFixed(2)}%`);
     
     // Color based on meeting SLO
     if (currentSLO >= gameState.selectedSLO.value) {
