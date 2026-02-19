@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Mushroom Game</title>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
-  <style>
-    body {
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #000;
-    }
-    canvas {
-        border: 1px solid #fff;
-    }
-</style>
-  <script src="game.js"></script>
-  <script type="module">
-    import { getUserContext } from '/modules/contextGenerator.js';
-    getUserContext();
-  </script>
-  <style>
-    body { margin: 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mushy Washy - Game Collection</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <script type="module">
+        import { getUserContext } from './modules/contextGenerator.js';
+        getUserContext();
+    </script>
 </head>
 <body>
+    <header>
+        <h1>Welcome to Mushy Washy</h1>
+    </header>
+    <main>
+        <!-- Add mushroom image -->
+        <div class="center">
+            <img src="assets/blueMushroom.jpeg" alt="Blue Mushroom">
+        </div>        
+        <p>This is our home page. We're glad to have you here!</p>
+        <p>The game instructions are:</p>
+        <p>Press and hold the up key to move your basket and collect your mushrooms</p>
+        <p>The more mushrooms you collect the heavier your basket</p>
+        <div class="center">
+            <button onclick="window.location.href = 'mushroom-game.html';">Play Mushroom Game</button>
+        </div>
+        <h2 style="text-align: center; color: white; margin-top: 40px;">🎓 SRE Education Game</h2>
+        <p style="text-align: center;">Learn about Error Budgeting with our Barista Game!</p>
+        <div class="center">
+            <button onclick="window.location.href = 'barista.html';">Play Barista Game</button>
+        </div>
+        </main>
 </body>
 </html>
