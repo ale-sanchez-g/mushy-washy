@@ -12,7 +12,8 @@ window.onload = function() {
     score: 0,
     activeOrders: [],
     isPaused: false,
-    gamePhase: 'sloSelection' // sloSelection, playing, gameOver
+    gamePhase: 'sloSelection', // sloSelection, playing, gameOver
+    spawnTimerId: null
   };
 
   // Phaser game configuration
@@ -192,6 +193,13 @@ window.onload = function() {
 
   function startLevel() {
     const scene = this;
+    
+    // Cancel any pending spawn timer from previous level
+    if (gameState.spawnTimerId) {
+      gameState.spawnTimerId.remove();
+      gameState.spawnTimerId = null;
+    }
+    
     const level = BaristaConfig.levels[gameState.currentLevel];
 
     if (!level) {
@@ -238,7 +246,7 @@ window.onload = function() {
       createOrder.call(scene, orderType);
       
       // Schedule next order
-      scene.time.delayedCall(level.spawnDelay, spawnOrder);
+      gameState.spawnTimerId = scene.time.delayedCall(level.spawnDelay, spawnOrder);
     };
 
     spawnOrder();
@@ -416,7 +424,7 @@ window.onload = function() {
     updateGameUI.call(scene);
 
     // Check if error budget exhausted
-    if (gameState.errorBudgetRemaining <= 0 && gameState.selectedSLO.errorBudget > 0) {
+    if (gameState.errorBudgetRemaining <= 0) {
       endGame.call(scene, false);
     }
   }
@@ -569,7 +577,7 @@ window.onload = function() {
     playAgainBtn.setInteractive({ useHandCursor: true });
     playAgainBtn.setStrokeStyle(2, 0xffffff);
 
-    const playAgainText = scene.add.text(300, 520, 'Play Again', {
+    const playAgainText = scene.add.text(300, 550, 'Play Again', {
       fontSize: '20px',
       fontWeight: 'bold',
       fill: '#fff'
@@ -597,7 +605,8 @@ window.onload = function() {
         score: 0,
         activeOrders: [],
         isPaused: false,
-        gamePhase: 'sloSelection'
+        gamePhase: 'sloSelection',
+        spawnTimerId: null
       };
       texts = {};
     });
@@ -606,7 +615,7 @@ window.onload = function() {
     backBtn.setInteractive({ useHandCursor: true });
     backBtn.setStrokeStyle(2, 0xffffff);
 
-    const backText = scene.add.text(500, 520, 'Back to Menu', {
+    const backText = scene.add.text(500, 550, 'Back to Menu', {
       fontSize: '20px',
       fontWeight: 'bold',
       fill: '#fff'
