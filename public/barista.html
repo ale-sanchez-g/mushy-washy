@@ -41,18 +41,23 @@
       "https://unpkg.com/@grafana/faro-web-sdk@2/dist/bundle/faro-web-sdk.iife.js";
 
     webSdkScript.onload = () => {
-      window.GrafanaFaroWebSdk.initializeFaro({
-        url: "https://faro-collector-prod-au-southeast-1.grafana.net/collect/37b949c0be48aaa3ff2d8a64faa3d567",
-        app: {
-          name: "mushy-washy-cafe",
-          version: "1.0.0",
-          environment: "production",
+      try {
+        window.GrafanaFaroWebSdk.initializeFaro({
+          url: "https://faro-collector-prod-au-southeast-1.grafana.net/collect/37b949c0be48aaa3ff2d8a64faa3d567",
+          app: {
+            name: "mushy-washy-cafe",
+            version: "1.0.0",
+            environment: "production",
+          },
+          sessionTracking: {
+          samplingRate: 1,
+          persistent: true
         },
-        sessionTracking: {
-        samplingRate: 1,
-        persistent: true
-      },
-      });
+        });
+      } catch (error) {
+        console.warn('Grafana Faro initialization failed (CORS):', error.message);
+        return; // Skip tracing instrumentation if Faro fails
+      }
 
 
       // Load instrumentations at the onLoad event of the web-SDK and after the above configuration.
@@ -65,9 +70,13 @@
 
       // Initialize, configure (if necessary) and add the the new instrumentation to the already loaded and configured Web-SDK.
       webTracingScript.onload = () => {
-        window.GrafanaFaroWebSdk.faro.instrumentations.add(
-          new window.GrafanaFaroWebTracing.TracingInstrumentation()
-        );
+        try {
+          window.GrafanaFaroWebSdk.faro.instrumentations.add(
+            new window.GrafanaFaroWebTracing.TracingInstrumentation()
+          );
+        } catch (error) {
+          console.warn('Grafana Faro tracing failed:', error.message);
+        }
       };
 
       // Append the Web Tracing script script tag to the HTML page
