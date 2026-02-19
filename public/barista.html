@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barista Error Budget Game</title>
+  <script src="/phaser.min.js"></script>
+  <style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Arial', sans-serif;
+    }
+    #game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    canvas {
+        border: 3px solid #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+  </style>
+  <script src="baristaConfig.js"></script>
+  <script src="barista.js"></script>
+</head>
+<body>
+  <div id="game-container"></div>
+</body>
+</html>

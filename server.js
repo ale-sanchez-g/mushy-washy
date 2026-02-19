@@ -13,8 +13,11 @@ const userKey = uuid.v4();
 const PORT = process.env.PORT || 3000;
 const LD_SDK_KEY = process.env.LD_SDK_KEY;
 
-// Initialize the LaunchDarkly client
-const ldClient = LaunchDarkly.init(LD_SDK_KEY);
+// Initialize the LaunchDarkly client only if SDK key is provided
+let ldClient;
+if (LD_SDK_KEY) {
+  ldClient = LaunchDarkly.init(LD_SDK_KEY);
+}
 let context = {
   key: userKey,
   custom: {
@@ -32,14 +35,24 @@ app.get('/', (req, res) => {
 
 // Route for serving the welcome.html file
 app.get('/welcome', (req, res) => {
-  ldClient.variation('welcome-page', context ,false).then(showFeature => {
-    if (showFeature) {
-      console.log('Showing feature for user welcome page');
-      res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
-    } else {
-      res.redirect('/');
-    }
-  });
+  if (ldClient) {
+    ldClient.variation('welcome-page', context ,false).then(showFeature => {
+      if (showFeature) {
+        console.log('Showing feature for user welcome page');
+        res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
+      } else {
+        res.redirect('/');
+      }
+    });
+  } else {
+    // If no LaunchDarkly client, always show welcome page
+    res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
+  }
+});
+
+// Route for serving the barista game
+app.get('/barista', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'barista.html'));
 });
 
 // Serve the modules from public/modules folder
