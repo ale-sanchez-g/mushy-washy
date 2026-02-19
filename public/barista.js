@@ -569,7 +569,7 @@ window.onload = function() {
     backBtn.on('pointerover', () => backBtn.setFillStyle(0x7f8c8d));
     backBtn.on('pointerout', () => backBtn.setFillStyle(0x95a5a6));
     backBtn.on('pointerdown', () => {
-      window.location.href = '/welcome';
+      window.location.href = 'index.html';
     });
   }
 

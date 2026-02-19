@@ -43,30 +43,52 @@ An educational game designed to teach Site Reliability Engineering (SRE) concept
 
 ## Installation
 
-To install the game, follow these steps:
+To install and run locally, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/yourusername/bluemushroomgame.git`
-2. Navigate to the project directory: `cd bluemushroomgame`
+1. Clone the repository: `git clone https://github.com/ale-sanchez-g/mushy-washy.git`
+2. Navigate to the project directory: `cd mushy-washy`
 3. Install the dependencies: `npm install`
 4. Start the server: `npm start`
 
 ## Usage
 
-To play the games:
+### Play Online (GitHub Pages)
+
+The games are deployed to GitHub Pages and can be played directly in your browser:
+
+- **Main Landing Page**: `https://ale-sanchez-g.github.io/mushy-washy/`
+- **Barista Game**: `https://ale-sanchez-g.github.io/mushy-washy/barista.html`
+- **Mushroom Game**: `https://ale-sanchez-g.github.io/mushy-washy/mushroom-game.html`
+
+### Run Locally
+
+To play the games locally:
 
 1. Start the server: `npm start`
 2. Open your browser and navigate to:
-   - Welcome page: `http://localhost:3000/welcome`
-   - Blue Mushroom Game: `http://localhost:3000/`
+   - Landing page: `http://localhost:3000/`
    - Barista Game: `http://localhost:3000/barista`
+   - Mushroom Game: `http://localhost:3000/mushroom-game`
+
+## Deployment
+
+The games are automatically deployed to GitHub Pages when changes are pushed to the `main` branch. The deployment workflow:
+
+1. Checks out the repository
+2. Configures GitHub Pages
+3. Uploads the `public` folder as a static site
+4. Deploys to GitHub Pages
+
+All game files are static HTML/JS and work without requiring a Node.js server in production.
 
 ## Server Routes
 
 The server uses Express.js and serves static files from the 'public' directory.
 
-- `/` - Blue Mushroom Game
-- `/welcome` - Welcome page with game selection
+- `/` - Landing page with game selection
+- `/welcome` - Redirects to landing page (for backwards compatibility)
 - `/barista` - Barista Error Budget Game
+- `/mushroom-game` - Blue Mushroom Game
 
 ## Feature Flags
 

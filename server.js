@@ -28,26 +28,31 @@ let context = {
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route for serving the index.html file
+// Route for serving the index.html file (main landing page)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Route for serving the welcome.html file
+// Route for serving the welcome.html file (for backwards compatibility)
 app.get('/welcome', (req, res) => {
   if (ldClient) {
     ldClient.variation('welcome-page', context, false).then(showFeature => {
       if (showFeature) {
         console.log('Showing feature for user welcome page');
-        res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
       } else {
         res.redirect('/');
       }
     });
   } else {
     // If no LaunchDarkly client, always show welcome page
-    res.sendFile(path.join(__dirname, 'public', 'welcome.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
   }
+});
+
+// Route for serving the mushroom game
+app.get('/mushroom-game', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'mushroom-game.html'));
 });
 
 // Route for serving the barista game
