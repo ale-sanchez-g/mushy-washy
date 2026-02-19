@@ -663,7 +663,15 @@ window.onload = function() {
 
   function getScores() {
     const scoresStr = getCookie('baristaScores');
-    return scoresStr ? JSON.parse(scoresStr) : [];
+    if (!scoresStr) return [];
+    
+    try {
+      return JSON.parse(scoresStr);
+    } catch (e) {
+      // If cookie data is corrupted, return empty array
+      console.warn('Failed to parse scores from cookie:', e);
+      return [];
+    }
   }
 
   function update() {
