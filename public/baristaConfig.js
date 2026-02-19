@@ -36,39 +36,39 @@ const BaristaConfig = {
       number: 1, 
       name: 'Morning Rush - Easy', 
       complexity: 'simple', 
-      spawnDelay: 5000,
-      duration: 30000,
+      spawnDelay: 2000,
+      duration: 20000,
       description: 'Start your day with simple orders'
     },
     { 
       number: 2, 
       name: 'Lunch Break - Medium', 
       complexity: 'medium', 
-      spawnDelay: 4000,
-      duration: 40000,
+      spawnDelay: 1000,
+      duration: 20000,
       description: 'Orders are getting more complex'
     },
     { 
       number: 3, 
       name: 'Afternoon Specialty - Hard', 
       complexity: 'complex', 
-      spawnDelay: 3500,
-      duration: 50000,
+      spawnDelay: 500,
+      duration: 20000,
       description: 'Complex specialty drinks'
     },
     { 
       number: 4, 
       name: 'Peak Hour - Expert', 
       complexity: 'complex', 
-      spawnDelay: 2500,
-      duration: 60000,
+      spawnDelay: 100,
+      duration: 20000,
       description: 'Fast-paced complex orders'
     }
   ],
 
   // Game settings
   gameSettings: {
-    orderLifetime: 10000, // How long an order stays before timing out
+    orderLifetime: 4000, // How long an order stays before timing out
     perfectTimeWindow: 500, // Window for perfect completion bonus
     canvasWidth: 800,
     canvasHeight: 600
