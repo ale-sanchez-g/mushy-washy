@@ -8,7 +8,7 @@
   <script src="phaser.min.js"></script>
   <style>
     body {
-        margin: 0;
+        margin: 50;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -35,6 +35,14 @@
 <body>
   <div id="game-container"></div>
 </body>
+<script>
+  // Register Service Worker for caching Grafana scripts
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('Service Worker registration failed:', error);
+    });
+  }
+</script>
 <script>
   (function () {
     var webSdkScript = document.createElement("script");

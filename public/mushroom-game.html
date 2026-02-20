@@ -30,6 +30,14 @@
 <body>
 </body>
 <script>
+  // Register Service Worker for caching Grafana scripts
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('Service Worker registration failed:', error);
+    });
+  }
+</script>
+<script>
   (function () {
     var webSdkScript = document.createElement("script");
 
