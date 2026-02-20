@@ -555,7 +555,7 @@ describe('Snake Game', () => {
     expect(eventNames).toContain('pointerup');
   });
 
-  test('swipe right should set nextDirection to RIGHT', () => {
+  test('swipe right should move snake head to the right', () => {
     require('../public/snake');
 
     const config = global.Phaser.Game.mock.calls[0][0];
@@ -564,28 +564,43 @@ describe('Snake Game', () => {
     const pointerdownCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerdown');
     const pointerupCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerup');
 
+    // Swipe right (dx > 30) — direction already RIGHT so nextDirection stays RIGHT
     pointerdownCall[1]({ x: 100, y: 300 });
-    // Swipe right (dx > 30)
     pointerupCall[1]({ x: 200, y: 300 });
 
-    // Should not throw and pointerup handler ran
-    expect(pointerupCall).toBeDefined();
+    // Propagate direction then move snake
+    config.scene.update.call(mockScene);
+    const timerCall = mockScene.time.addEvent.mock.calls[0][0];
+    timerCall.callback.call(mockScene);
+
+    // New head should be created to the right of the original head (x increases)
+    const newHeadCall = mockGroup.create.mock.calls[mockGroup.create.mock.calls.length - 1];
+    expect(newHeadCall[0]).toBeGreaterThan(mockChildren[0].x);
+    expect(newHeadCall[1]).toBe(mockChildren[0].y);
   });
 
-  test('swipe up should set nextDirection to UP when not moving DOWN', () => {
+  test('swipe up should move snake head upward', () => {
     require('../public/snake');
 
     const config = global.Phaser.Game.mock.calls[0][0];
-    // Change direction to RIGHT first by calling update with right key then swap to UP
     config.scene.create.call(mockScene);
 
     const pointerdownCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerdown');
     const pointerupCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerup');
 
+    // Swipe up (dy < -30) — changes direction from RIGHT to UP
     pointerdownCall[1]({ x: 300, y: 300 });
-    // Swipe up (dy < -30)
     pointerupCall[1]({ x: 300, y: 200 });
 
-    expect(pointerupCall).toBeDefined();
+    // update() propagates nextDirection → direction
+    config.scene.update.call(mockScene);
+    // moveSnake uses direction='UP': newHeadY = head.y - 5
+    const timerCall = mockScene.time.addEvent.mock.calls[0][0];
+    timerCall.callback.call(mockScene);
+
+    // New head should be created above the original head (y decreases)
+    const newHeadCall = mockGroup.create.mock.calls[mockGroup.create.mock.calls.length - 1];
+    expect(newHeadCall[1]).toBeLessThan(mockChildren[0].y);
+    expect(newHeadCall[0]).toBe(mockChildren[0].x);
   });
 });
