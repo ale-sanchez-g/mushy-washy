@@ -36,6 +36,27 @@ window.onload = function() {
   let texts = {};
   let sloSelectionElements = []; // Store references to SLO selection UI elements
 
+  function resetGameState() {
+    gameState = {
+      selectedSLO: null,
+      currentLevel: 0,
+      totalOrders: 0,
+      successfulOrders: 0,
+      failedOrders: 0,
+      currentSLO: 1.0,
+      errorBudgetRemaining: 0,
+      score: 0,
+      activeOrders: [],
+      isPaused: false,
+      gamePhase: 'sloSelection',
+      spawnTimerId: null,
+      levelStartTimerId: null,
+      levelEndTimerId: null
+    };
+    texts = {};
+    sloSelectionElements = [];
+  }
+
   function create() {
     graphics = this.add.graphics();
     
@@ -548,13 +569,13 @@ window.onload = function() {
     gameState.activeOrders = [];
 
     // Game over overlay
-    const overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
+    const overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1);
     overlay.setInteractive(); // Block clicks from passing through
 
     // Title
-    const title = scene.add.text(400, 80, 
+    const title = scene.add.text(400, 60, 
       won ? '🎉 Congratulations!' : '💔 Game Over', {
-      fontSize: '48px',
+      fontSize: '42px',
       fontWeight: 'bold',
       fill: won ? '#2ecc71' : '#e74c3c'
     }).setOrigin(0.5);
@@ -566,8 +587,8 @@ window.onload = function() {
         ? 'You broke the promise!'
         : 'Better luck next time!';
 
-    const messageText = scene.add.text(400, 145, message, {
-      fontSize: '24px',
+    const messageText = scene.add.text(400, 115, message, {
+      fontSize: '20px',
       fill: '#fff'
     }).setOrigin(0.5);
 
@@ -581,25 +602,31 @@ window.onload = function() {
     ];
 
     stats.forEach((stat, index) => {
-      scene.add.text(400, 195 + index * 28, stat, {
+      scene.add.text(400, 155 + index * 30, stat, {
         fontSize: '16px',
         fill: '#ecf0f1'
       }).setOrigin(0.5);
     });
 
     // Lesson learned
-    const lesson = scene.add.text(400, 345, 
+    const lesson = scene.add.text(400, 315, 
       'Higher SLO targets leave less room for errors,\nmaking it harder to experiment and innovate!', {
-      fontSize: '14px',
+      fontSize: '13px',
       fill: '#f39c12',
       align: 'center',
       fontStyle: 'italic'
     }).setOrigin(0.5);
 
     // Player name input
-    const nameLabel = scene.add.text(400, 410, 'Enter your name:', {
-      fontSize: '16px',
+    const nameLabel = scene.add.text(400, 375, 'Enter your name for the leaderboard:', {
+      fontSize: '15px',
       fill: '#fff'
+    }).setOrigin(0.5);
+    
+    const nameHint = scene.add.text(400, 442, '(Click any button below to save score)', {
+      fontSize: '12px',
+      fill: '#95a5a6',
+      fontStyle: 'italic'
     }).setOrigin(0.5);
 
     // Create HTML input element for player name
@@ -609,8 +636,8 @@ window.onload = function() {
     inputElement.placeholder = 'Player Name';
     inputElement.maxLength = 20;
     inputElement.style.position = 'absolute';
-    inputElement.style.width = '200px';
-    inputElement.style.height = '30px';
+    inputElement.style.width = '220px';
+    inputElement.style.height = '32px';
     inputElement.style.fontSize = '16px';
     inputElement.style.textAlign = 'center';
     inputElement.style.border = '2px solid #3498db';
@@ -621,8 +648,8 @@ window.onload = function() {
     // Position the input element relative to the canvas
     const canvas = scene.sys.game.canvas;
     const canvasRect = canvas.getBoundingClientRect();
-    inputElement.style.left = (canvasRect.left + 300) + 'px';
-    inputElement.style.top = (canvasRect.top + 435) + 'px';
+    inputElement.style.left = (canvasRect.left + 290) + 'px';
+    inputElement.style.top = (canvasRect.top + 395) + 'px';
     
     document.body.appendChild(inputElement);
     inputElement.focus();
@@ -634,13 +661,40 @@ window.onload = function() {
       }
     };
 
-    // Buttons
-    const playAgainBtn = scene.add.rectangle(300, 500, 180, 50, 0x3498db);
+    // Buttons - repositioned to be more compact
+    const buttonY = 470;
+    const buttonSpacing = 145;
+    
+    const leaderboardBtn = scene.add.rectangle(400 - buttonSpacing, buttonY, 130, 45, 0x9b59b6);
+    leaderboardBtn.setInteractive({ useHandCursor: true });
+    leaderboardBtn.setStrokeStyle(2, 0xffffff);
+
+    const leaderboardText = scene.add.text(400 - buttonSpacing, buttonY, 'Leaderboard', {
+      fontSize: '16px',
+      fontWeight: 'bold',
+      fill: '#fff'
+    }).setOrigin(0.5);
+
+    leaderboardBtn.on('pointerover', () => leaderboardBtn.setFillStyle(0x8e44ad));
+    leaderboardBtn.on('pointerout', () => leaderboardBtn.setFillStyle(0x9b59b6));
+    leaderboardBtn.on('pointerdown', () => {
+      // Save score with current name
+      const playerName = inputElement.value.trim() || 'Anonymous';
+      saveScore(playerName, gameState.score, gameState.selectedSLO.name);
+      
+      // Clean up input element
+      cleanupInput();
+      
+      // Show leaderboard
+      showLeaderboard.call(scene);
+    });
+
+    const playAgainBtn = scene.add.rectangle(400, buttonY, 130, 45, 0x3498db);
     playAgainBtn.setInteractive({ useHandCursor: true });
     playAgainBtn.setStrokeStyle(2, 0xffffff);
 
-    const playAgainText = scene.add.text(300, 500, 'Play Again', {
-      fontSize: '20px',
+    const playAgainText = scene.add.text(400, buttonY, 'Play Again', {
+      fontSize: '16px',
       fontWeight: 'bold',
       fill: '#fff'
     }).setOrigin(0.5);
@@ -656,34 +710,17 @@ window.onload = function() {
       cleanupInput();
       
       // Reset game state
-      gameState = {
-        selectedSLO: null,
-        currentLevel: 0,
-        totalOrders: 0,
-        successfulOrders: 0,
-        failedOrders: 0,
-        currentSLO: 1.0,
-        errorBudgetRemaining: 0,
-        score: 0,
-        activeOrders: [],
-        isPaused: false,
-        gamePhase: 'sloSelection',
-        spawnTimerId: null,
-        levelStartTimerId: null,
-        levelEndTimerId: null
-      };
-      texts = {};
-      sloSelectionElements = [];
+      resetGameState();
       
       scene.scene.restart();
     });
 
-    const backBtn = scene.add.rectangle(500, 500, 180, 50, 0x95a5a6);
+    const backBtn = scene.add.rectangle(400 + buttonSpacing, buttonY, 130, 45, 0x95a5a6);
     backBtn.setInteractive({ useHandCursor: true });
     backBtn.setStrokeStyle(2, 0xffffff);
 
-    const backText = scene.add.text(500, 500, 'Back to Menu', {
-      fontSize: '20px',
+    const backText = scene.add.text(400 + buttonSpacing, buttonY, 'Main Menu', {
+      fontSize: '16px',
       fontWeight: 'bold',
       fill: '#fff'
     }).setOrigin(0.5);
@@ -748,6 +785,197 @@ window.onload = function() {
       console.warn('Failed to parse scores from cookie:', e);
       return [];
     }
+  }
+
+  function showLeaderboard() {
+    const scene = this;
+    
+    // Clear all existing UI elements
+    scene.children.removeAll(true);
+
+    // Fresh full-black backdrop
+    const backdrop = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1);
+    backdrop.setInteractive();
+    backdrop.setDepth(0);
+    backdrop.setAlpha(0);
+
+    // Remove any remaining HUD text objects and header graphics
+    Object.values(texts).forEach(text => {
+      if (text && text.destroy) {
+        text.destroy();
+      }
+    });
+    texts = {};
+    if (graphics) {
+      graphics.clear();
+    }
+
+    const renderLeaderboard = () => {
+    // Title
+    const title = scene.add.text(400, 35, '🏆 Leaderboard', {
+      fontSize: '36px',
+      fontWeight: 'bold',
+      fill: '#f1c40f'
+    }).setOrigin(0.5);
+
+    const subtitle = scene.add.text(400, 75, 'Top Barista Scores', {
+      fontSize: '16px',
+      fill: '#95a5a6',
+      fontStyle: 'italic'
+    }).setOrigin(0.5);
+
+    // Get scores
+    const scores = getScores();
+
+    if (scores.length === 0) {
+      const emptyText = scene.add.text(400, 250, 'No scores yet!\nBe the first to set a record!', {
+        fontSize: '22px',
+        fill: '#ecf0f1',
+        align: 'center'
+      }).setOrigin(0.5);
+    } else {
+      // Create a background panel for the leaderboard table
+      const tableBg = scene.add.rectangle(400, 270, 680, 300, 0x2c3e50, 0.8);
+      tableBg.setStrokeStyle(2, 0x34495e);
+
+      // Headers
+      const headerY = 100;
+      scene.add.text(120, headerY, 'Rank', {
+        fontSize: '15px',
+        fontWeight: 'bold',
+        fill: '#3498db'
+      }).setOrigin(0.5);
+      scene.add.text(280, headerY, 'Player', {
+        fontSize: '15px',
+        fontWeight: 'bold',
+        fill: '#3498db'
+      }).setOrigin(0.5);
+      scene.add.text(520, headerY, 'Score', {
+        fontSize: '15px',
+        fontWeight: 'bold',
+        fill: '#3498db'
+      }).setOrigin(0.5);
+      scene.add.text(660, headerY, 'SLO', {
+        fontSize: '15px',
+        fontWeight: 'bold',
+        fill: '#3498db'
+      }).setOrigin(0.5);
+
+      // Divider line under headers
+      const headerLine = scene.add.rectangle(400, 112, 680, 2, 0x3498db, 0.5);
+
+      // Display top 7 scores (to fit better on screen)
+      const maxEntries = Math.min(7, scores.length);
+      scores.slice(0, maxEntries).forEach((scoreEntry, index) => {
+        const y = 135 + index * 34;
+        
+        // Alternating row background for better readability
+        if (index % 2 === 0) {
+          const rowBg = scene.add.rectangle(400, y, 660, 32, 0x34495e, 0.4);
+        }
+        
+        // Rank with medal for top 3
+        let rankText = `${index + 1}`;
+        let rankColor = '#ecf0f1';
+        if (index === 0) {
+          rankText = '🥇';
+          rankColor = '#f1c40f';
+        } else if (index === 1) {
+          rankText = '🥈';
+          rankColor = '#95a5a6';
+        } else if (index === 2) {
+          rankText = '🥉';
+          rankColor = '#cd7f32';
+        }
+        
+        scene.add.text(120, y, rankText, {
+          fontSize: '18px',
+          fill: rankColor,
+          fontWeight: 'bold'
+        }).setOrigin(0.5);
+
+        // Player name (truncate if too long)
+        const playerName = scoreEntry.playerName.length > 18 
+          ? scoreEntry.playerName.substring(0, 15) + '...'
+          : scoreEntry.playerName;
+        
+        scene.add.text(280, y, playerName, {
+          fontSize: '16px',
+          fill: '#fff'
+        }).setOrigin(0.5);
+
+        // Score with nice formatting
+        const scoreText = scoreEntry.score.toLocaleString();
+        scene.add.text(520, y, scoreText, {
+          fontSize: '16px',
+          fill: '#2ecc71',
+          fontWeight: 'bold'
+        }).setOrigin(0.5);
+
+        // SLO
+        scene.add.text(660, y, scoreEntry.slo, {
+          fontSize: '15px',
+          fill: '#9b59b6'
+        }).setOrigin(0.5);
+      });
+      
+      // If there are more than 8 scores, show a note
+      if (scores.length > 7) {
+        scene.add.text(400, 455, `+ ${scores.length - 7} more`, {
+          fontSize: '13px',
+          fill: '#7f8c8d',
+          fontStyle: 'italic'
+        }).setOrigin(0.5);
+      }
+    }
+
+    // Buttons
+    const buttonY = 520;
+    const playAgainBtn = scene.add.rectangle(300, buttonY, 160, 42, 0x3498db);
+    playAgainBtn.setInteractive({ useHandCursor: true });
+    playAgainBtn.setStrokeStyle(2, 0xffffff);
+
+    const playAgainText = scene.add.text(300, buttonY, 'Play Again', {
+      fontSize: '17px',
+      fontWeight: 'bold',
+      fill: '#fff'
+    }).setOrigin(0.5);
+
+    playAgainBtn.on('pointerover', () => playAgainBtn.setFillStyle(0x2980b9));
+    playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(0x3498db));
+    playAgainBtn.on('pointerdown', () => {
+      // Reset game state
+      resetGameState();
+      
+      scene.scene.restart();
+    });
+
+    const backBtn = scene.add.rectangle(500, buttonY, 160, 42, 0x95a5a6);
+    backBtn.setInteractive({ useHandCursor: true });
+    backBtn.setStrokeStyle(2, 0xffffff);
+
+    const backText = scene.add.text(500, buttonY, 'Main Menu', {
+      fontSize: '17px',
+      fontWeight: 'bold',
+      fill: '#fff'
+    }).setOrigin(0.5);
+
+    backBtn.on('pointerover', () => backBtn.setFillStyle(0x7f8c8d));
+    backBtn.on('pointerout', () => backBtn.setFillStyle(0x95a5a6));
+    backBtn.on('pointerdown', () => {
+      window.location.href = 'index.html';
+    });
+    };
+
+    // Quick fade-to-black, then render leaderboard
+    scene.tweens.add({
+      targets: backdrop,
+      alpha: 1,
+      duration: 120,
+      onComplete: () => {
+        scene.time.delayedCall(0, renderLeaderboard);
+      }
+    });
   }
 
   function update() {
