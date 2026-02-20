@@ -60,6 +60,11 @@ app.get('/barista', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'barista.html'));
 });
 
+// Route for serving the snake game
+app.get('/snake', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'snake.html'));
+});
+
 // Serve the modules from public/modules folder
 app.use('/modules', express.static(path.join(__dirname, 'public', 'modules')));
 
