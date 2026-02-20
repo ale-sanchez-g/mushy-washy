@@ -61,8 +61,8 @@ app.get('/barista', (req, res) => {
 });
 
 // Route for serving the snake game
-app.get('/snake', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'snake.html'));
+app.get('/snake-game', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'snake-game.html'));
 });
 
 // Serve the modules from public/modules folder

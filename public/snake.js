@@ -145,7 +145,7 @@ function moveSnake() {
             link.setPosition(this.scale.width / 2, this.scale.height / 2 + 50);
             link.setInteractive();
             link.on('pointerdown', () => {
-                window.location.href = '/welcome';
+                window.location.href = '/';
             });
     return;
   }
