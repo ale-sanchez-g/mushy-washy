@@ -78,6 +78,10 @@ describe('Barista Error Budget Game', () => {
         RND: {
           pick: jest.fn((arr) => arr[0])
         }
+      },
+      Scale: {
+        FIT: 3,
+        CENTER_BOTH: 1
       }
     };
 
@@ -369,6 +373,19 @@ describe('Barista Error Budget Game', () => {
     }
 
     expect(global.Phaser.Game).toHaveBeenCalledTimes(1);
+  });
+
+  test('game config should include scale settings for mobile responsiveness', () => {
+    require('../public/barista');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    expect(config.scale).toBeDefined();
+    expect(config.scale.mode).toBe(global.Phaser.Scale.FIT);
+    expect(config.scale.autoCenter).toBe(global.Phaser.Scale.CENTER_BOTH);
   });
 
   test('create should initialize graphics', () => {

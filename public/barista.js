@@ -25,6 +25,10 @@ window.onload = function() {
     height: BaristaConfig.gameSettings.canvasHeight,
     parent: 'game-container',
     backgroundColor: '#2d3436',
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     scene: {
       create: create,
       update: update

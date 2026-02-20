@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Blue Mushroom Game</title>
   <link rel="icon" type="image/jpeg" href="assets/blueMushroom.jpeg">
   <script src="phaser.min.js"></script>
@@ -13,10 +13,12 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
+        overflow: hidden;
         background-color: #000;
     }
     canvas {
         border: 1px solid #fff;
+        touch-action: none;
     }
 </style>
   <script src="game.js"></script>

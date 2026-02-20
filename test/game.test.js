@@ -59,7 +59,8 @@ describe('Mushroom Game', () => {
           up: { isDown: false },
           down: { isDown: false }
         })
-      }
+      },
+      on: jest.fn()
     };
 
     mockScale = {
@@ -87,6 +88,10 @@ describe('Mushroom Game', () => {
       }),
       Math: {
         Between: jest.fn((min, max) => Math.floor(Math.random() * (max - min + 1)) + min)
+      },
+      Scale: {
+        FIT: 3,
+        CENTER_BOTH: 1
       },
       Actions: {
         ShiftPosition: jest.fn()
@@ -645,5 +650,100 @@ describe('Mushroom Game', () => {
     const timerCall = mockTime.addEvent.mock.calls[0][0];
     expect(typeof timerCall.callback).toBe('function');
     expect(timerCall.callbackScope).toBe(mockScene);
+  });
+
+  test('create should register pointerdown event for touch support', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const eventNames = mockInput.on.mock.calls.map(call => call[0]);
+    expect(eventNames).toContain('pointerdown');
+  });
+
+  test('create should register pointermove event for touch drag support', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const eventNames = mockInput.on.mock.calls.map(call => call[0]);
+    expect(eventNames).toContain('pointermove');
+  });
+
+  test('pointerdown handler should move basket to touch position', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const basket = mockPhysics.add.image.mock.results[0].value;
+
+    // Find and invoke the pointerdown handler
+    const pointerdownCall = mockInput.on.mock.calls.find(call => call[0] === 'pointerdown');
+    expect(pointerdownCall).toBeDefined();
+    const handler = pointerdownCall[1];
+    handler({ x: 200, y: 300 });
+
+    expect(basket.x).toBe(200);
+    expect(basket.y).toBe(300);
+  });
+
+  test('pointermove handler should move basket when pointer is pressed', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const basket = mockPhysics.add.image.mock.results[0].value;
+
+    // Find and invoke the pointermove handler with isDown = true
+    const pointermoveCall = mockInput.on.mock.calls.find(call => call[0] === 'pointermove');
+    expect(pointermoveCall).toBeDefined();
+    const handler = pointermoveCall[1];
+    handler({ x: 150, y: 400, isDown: true });
+
+    expect(basket.x).toBe(150);
+    expect(basket.y).toBe(400);
+  });
+
+  test('pointermove handler should not move basket when pointer is not pressed', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const basket = mockPhysics.add.image.mock.results[0].value;
+    const initialX = basket.x;
+    const initialY = basket.y;
+
+    // Find and invoke the pointermove handler with isDown = false
+    const pointermoveCall = mockInput.on.mock.calls.find(call => call[0] === 'pointermove');
+    const handler = pointermoveCall[1];
+    handler({ x: 150, y: 400, isDown: false });
+
+    expect(basket.x).toBe(initialX);
+    expect(basket.y).toBe(initialY);
   });
 });
