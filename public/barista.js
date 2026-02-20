@@ -36,6 +36,27 @@ window.onload = function() {
   let texts = {};
   let sloSelectionElements = []; // Store references to SLO selection UI elements
 
+  function resetGameState() {
+    gameState = {
+      selectedSLO: null,
+      currentLevel: 0,
+      totalOrders: 0,
+      successfulOrders: 0,
+      failedOrders: 0,
+      currentSLO: 1.0,
+      errorBudgetRemaining: 0,
+      score: 0,
+      activeOrders: [],
+      isPaused: false,
+      gamePhase: 'sloSelection',
+      spawnTimerId: null,
+      levelStartTimerId: null,
+      levelEndTimerId: null
+    };
+    texts = {};
+    sloSelectionElements = [];
+  }
+
   function create() {
     graphics = this.add.graphics();
     
@@ -689,24 +710,7 @@ window.onload = function() {
       cleanupInput();
       
       // Reset game state
-      gameState = {
-        selectedSLO: null,
-        currentLevel: 0,
-        totalOrders: 0,
-        successfulOrders: 0,
-        failedOrders: 0,
-        currentSLO: 1.0,
-        errorBudgetRemaining: 0,
-        score: 0,
-        activeOrders: [],
-        isPaused: false,
-        gamePhase: 'sloSelection',
-        spawnTimerId: null,
-        levelStartTimerId: null,
-        levelEndTimerId: null
-      };
-      texts = {};
-      sloSelectionElements = [];
+      resetGameState();
       
       scene.scene.restart();
     });
@@ -941,24 +945,7 @@ window.onload = function() {
     playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(0x3498db));
     playAgainBtn.on('pointerdown', () => {
       // Reset game state
-      gameState = {
-        selectedSLO: null,
-        currentLevel: 0,
-        totalOrders: 0,
-        successfulOrders: 0,
-        failedOrders: 0,
-        currentSLO: 1.0,
-        errorBudgetRemaining: 0,
-        score: 0,
-        activeOrders: [],
-        isPaused: false,
-        gamePhase: 'sloSelection',
-        spawnTimerId: null,
-        levelStartTimerId: null,
-        levelEndTimerId: null
-      };
-      texts = {};
-      sloSelectionElements = [];
+      resetGameState();
       
       scene.scene.restart();
     });
