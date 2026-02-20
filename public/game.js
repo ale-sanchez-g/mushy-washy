@@ -88,7 +88,21 @@ window.onload = function() {
         basket.body.setGravityY(-1); // Remove gravity from the basket
 
         // Create cursor keys
-        cursors = this.input.keyboard.createCursorKeys();   
+        cursors = this.input.keyboard.createCursorKeys();
+
+        // Touch/pointer support for mobile
+        const moveBasketToPointer = function(pointer) {
+            basket.x = pointer.x;
+            basket.y = pointer.y;
+        };
+
+        this.input.on('pointerdown', moveBasketToPointer, this);
+
+        this.input.on('pointermove', function(pointer) {
+            if (pointer.isDown) {
+                moveBasketToPointer(pointer);
+            }
+        }, this);
     }
   
     function update() {

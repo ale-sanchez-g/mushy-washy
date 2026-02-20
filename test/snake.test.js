@@ -47,7 +47,8 @@ describe('Snake Game', () => {
             up: { isDown: false },
             down: { isDown: false }
           })
-        }
+        },
+        on: jest.fn()
       },
       time: {
         addEvent: jest.fn().mockReturnValue({ remove: jest.fn() }),
@@ -81,6 +82,10 @@ describe('Snake Game', () => {
         Intersects: {
           RectangleToRectangle: jest.fn().mockReturnValue(false)
         }
+      },
+      Scale: {
+        FIT: 3,
+        CENTER_BOTH: 1
       }
     };
 
@@ -519,5 +524,83 @@ describe('Snake Game', () => {
     
     // Phaser.Math.Between should be called for random food position
     expect(global.Phaser.Math.Between).toHaveBeenCalled();
+  });
+
+  test('game config should include scale settings for mobile responsiveness', () => {
+    require('../public/snake');
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    expect(config.scale).toBeDefined();
+    expect(config.scale.mode).toBe(global.Phaser.Scale.FIT);
+    expect(config.scale.autoCenter).toBe(global.Phaser.Scale.CENTER_BOTH);
+  });
+
+  test('create should register pointerdown event for touch swipe support', () => {
+    require('../public/snake');
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const eventNames = mockScene.input.on.mock.calls.map(call => call[0]);
+    expect(eventNames).toContain('pointerdown');
+  });
+
+  test('create should register pointerup event for touch swipe support', () => {
+    require('../public/snake');
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const eventNames = mockScene.input.on.mock.calls.map(call => call[0]);
+    expect(eventNames).toContain('pointerup');
+  });
+
+  test('swipe right should move snake head to the right', () => {
+    require('../public/snake');
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const pointerdownCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerdown');
+    const pointerupCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerup');
+
+    // Swipe right (dx > 30) — direction already RIGHT so nextDirection stays RIGHT
+    pointerdownCall[1]({ x: 100, y: 300 });
+    pointerupCall[1]({ x: 200, y: 300 });
+
+    // Propagate direction then move snake
+    config.scene.update.call(mockScene);
+    const timerCall = mockScene.time.addEvent.mock.calls[0][0];
+    timerCall.callback.call(mockScene);
+
+    // New head should be created to the right of the original head (x increases)
+    const newHeadCall = mockGroup.create.mock.calls[mockGroup.create.mock.calls.length - 1];
+    expect(newHeadCall[0]).toBeGreaterThan(mockChildren[0].x);
+    expect(newHeadCall[1]).toBe(mockChildren[0].y);
+  });
+
+  test('swipe up should move snake head upward', () => {
+    require('../public/snake');
+
+    const config = global.Phaser.Game.mock.calls[0][0];
+    config.scene.create.call(mockScene);
+
+    const pointerdownCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerdown');
+    const pointerupCall = mockScene.input.on.mock.calls.find(c => c[0] === 'pointerup');
+
+    // Swipe up (dy < -30) — changes direction from RIGHT to UP
+    pointerdownCall[1]({ x: 300, y: 300 });
+    pointerupCall[1]({ x: 300, y: 200 });
+
+    // update() propagates nextDirection → direction
+    config.scene.update.call(mockScene);
+    // moveSnake uses direction='UP': newHeadY = head.y - 5
+    const timerCall = mockScene.time.addEvent.mock.calls[0][0];
+    timerCall.callback.call(mockScene);
+
+    // New head should be created above the original head (y decreases)
+    const newHeadCall = mockGroup.create.mock.calls[mockGroup.create.mock.calls.length - 1];
+    expect(newHeadCall[1]).toBeLessThan(mockChildren[0].y);
+    expect(newHeadCall[0]).toBe(mockChildren[0].x);
   });
 });

@@ -13,10 +13,12 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
+        overflow: hidden;
         background-color: #000;
     }
     canvas {
         border: 1px solid #fff;
+        touch-action: none;
     }
 </style>
   <script src="game.js"></script>
@@ -27,6 +29,14 @@
 </head>
 <body>
 </body>
+<script>
+  // Register Service Worker for caching Grafana scripts
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('Service Worker registration failed:', error);
+    });
+  }
+</script>
 <script>
   (function () {
     var webSdkScript = document.createElement("script");

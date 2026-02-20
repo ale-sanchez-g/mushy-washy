@@ -11,6 +11,10 @@ const config = {
   width: GAME_WIDTH,
   height: GAME_HEIGHT,
   backgroundColor: "#000",
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   scene: {
     preload: preload,
     create: create,
@@ -44,6 +48,28 @@ function create() {
   food = this.add.image(400, 300, "food");
 
   cursors = this.input.keyboard.createCursorKeys();
+
+  // Touch swipe support for mobile
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const MIN_SWIPE = 30;
+
+  this.input.on('pointerdown', function(pointer) {
+    touchStartX = pointer.x;
+    touchStartY = pointer.y;
+  }, this);
+
+  this.input.on('pointerup', function(pointer) {
+    const dx = pointer.x - touchStartX;
+    const dy = pointer.y - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > MIN_SWIPE && direction !== 'LEFT') nextDirection = 'RIGHT';
+      else if (dx < -MIN_SWIPE && direction !== 'RIGHT') nextDirection = 'LEFT';
+    } else {
+      if (dy > MIN_SWIPE && direction !== 'UP') nextDirection = 'DOWN';
+      else if (dy < -MIN_SWIPE && direction !== 'DOWN') nextDirection = 'UP';
+    }
+  }, this);
 
   scoreText = this.add.text(16, 16, "Score: 0", {
     fontSize: "32px",

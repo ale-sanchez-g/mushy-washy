@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Barista Promise Game</title>
     <link rel="icon" type="image/jpeg" href="assets/blueMushroom.jpeg">
   <script src="phaser.min.js"></script>
   <style>
     body {
-        margin: 0;
+        margin: 50;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
+        overflow: hidden;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         font-family: 'Arial', sans-serif;
     }
@@ -20,11 +21,14 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        width: 100vw;
+        height: 100vh;
     }
     canvas {
         border: 3px solid #fff;
         border-radius: 10px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        touch-action: none;
     }
   </style>
   <script src="baristaConfig.js"></script>
@@ -33,6 +37,14 @@
 <body>
   <div id="game-container"></div>
 </body>
+<script>
+  // Register Service Worker for caching Grafana scripts
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('Service Worker registration failed:', error);
+    });
+  }
+</script>
 <script>
   (function () {
     var webSdkScript = document.createElement("script");
