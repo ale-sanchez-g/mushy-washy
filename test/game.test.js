@@ -110,6 +110,12 @@ describe('Mushroom Game', () => {
       onload: null
     };
 
+    // Mock document event listeners for iOS audio unlock
+    global.document = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    };
+
     // Reset modules
     jest.resetModules();
   });
@@ -118,6 +124,7 @@ describe('Mushroom Game', () => {
     jest.clearAllMocks();
     delete global.Phaser;
     delete global.window;
+    delete global.document;
   });
 
   test('game module should be defined', () => {
@@ -745,5 +752,85 @@ describe('Mushroom Game', () => {
 
     expect(basket.x).toBe(initialX);
     expect(basket.y).toBe(initialY);
+  });
+
+  test('should register touchstart listener for iOS audio unlock on window load', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const touchstartCall = global.document.addEventListener.mock.calls.find(
+      call => call[0] === 'touchstart'
+    );
+    expect(touchstartCall).toBeDefined();
+    expect(touchstartCall[2]).toEqual({ capture: true, once: true });
+  });
+
+  test('should register click listener for iOS audio unlock on window load', () => {
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const clickCall = global.document.addEventListener.mock.calls.find(
+      call => call[0] === 'click'
+    );
+    expect(clickCall).toBeDefined();
+    expect(clickCall[2]).toEqual({ capture: true, once: true });
+  });
+
+  test('unlockAudio handler should call resume when AudioContext is suspended', () => {
+    const mockResume = jest.fn().mockReturnValue(Promise.resolve());
+    global.Phaser.Game.mockImplementation(() => ({
+      sound: {
+        context: {
+          state: 'suspended',
+          resume: mockResume
+        }
+      }
+    }));
+
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const touchstartCall = global.document.addEventListener.mock.calls.find(
+      call => call[0] === 'touchstart'
+    );
+    const unlockHandler = touchstartCall[1];
+    unlockHandler();
+
+    expect(mockResume).toHaveBeenCalled();
+  });
+
+  test('unlockAudio handler should not call resume when AudioContext is not suspended', () => {
+    const mockResume = jest.fn();
+    global.Phaser.Game.mockImplementation(() => ({
+      sound: {
+        context: {
+          state: 'running',
+          resume: mockResume
+        }
+      }
+    }));
+
+    require('../public/game');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const touchstartCall = global.document.addEventListener.mock.calls.find(
+      call => call[0] === 'touchstart'
+    );
+    const unlockHandler = touchstartCall[1];
+    unlockHandler();
+
+    expect(mockResume).not.toHaveBeenCalled();
   });
 });

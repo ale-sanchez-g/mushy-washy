@@ -696,4 +696,90 @@ describe('Barista Error Budget Game', () => {
     // Game state should be initialized when onload is called
     expect(global.Phaser.Game).toHaveBeenCalled();
   });
+
+  test('should register touchstart listener for iOS audio unlock on window load', () => {
+    require('../public/barista');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const touchstartCall = mockDocument.addEventListener.mock.calls.find(
+      call => call[0] === 'touchstart'
+    );
+    expect(touchstartCall).toBeDefined();
+    expect(touchstartCall[2]).toEqual({ capture: true, once: true });
+  });
+
+  test('should register click listener for iOS audio unlock on window load', () => {
+    require('../public/barista');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const clickCall = mockDocument.addEventListener.mock.calls.find(
+      call => call[0] === 'click'
+    );
+    expect(clickCall).toBeDefined();
+    expect(clickCall[2]).toEqual({ capture: true, once: true });
+  });
+
+  test('unlockAudio handler should call resume when AudioContext is suspended', () => {
+    const mockResume = jest.fn().mockReturnValue(Promise.resolve());
+    global.Phaser.Game.mockImplementation(() => ({
+      canvas: {
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 600 })
+      },
+      sound: {
+        context: {
+          state: 'suspended',
+          resume: mockResume
+        }
+      }
+    }));
+
+    require('../public/barista');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const touchstartCall = mockDocument.addEventListener.mock.calls.find(
+      call => call[0] === 'touchstart'
+    );
+    const unlockHandler = touchstartCall[1];
+    unlockHandler();
+
+    expect(mockResume).toHaveBeenCalled();
+  });
+
+  test('unlockAudio handler should not call resume when AudioContext is not suspended', () => {
+    const mockResume = jest.fn();
+    global.Phaser.Game.mockImplementation(() => ({
+      canvas: {
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 600 })
+      },
+      sound: {
+        context: {
+          state: 'running',
+          resume: mockResume
+        }
+      }
+    }));
+
+    require('../public/barista');
+
+    if (typeof global.window.onload === 'function') {
+      global.window.onload();
+    }
+
+    const touchstartCall = mockDocument.addEventListener.mock.calls.find(
+      call => call[0] === 'touchstart'
+    );
+    const unlockHandler = touchstartCall[1];
+    unlockHandler();
+
+    expect(mockResume).not.toHaveBeenCalled();
+  });
 });
