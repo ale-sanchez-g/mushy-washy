@@ -154,7 +154,9 @@ describe('Barista Error Budget Game', () => {
       body: {
         appendChild: jest.fn(),
         removeChild: jest.fn()
-      }
+      },
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
     };
     global.document = mockDocument;
 
