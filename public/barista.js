@@ -40,7 +40,12 @@ window.onload = function() {
   // iOS Safari Web Audio API unlock: resume AudioContext synchronously on first user gesture
   function unlockAudio() {
     if (game.sound && game.sound.context && game.sound.context.state === 'suspended') {
-      game.sound.context.resume();
+      const resumeResult = game.sound.context.resume();
+      if (resumeResult && typeof resumeResult.catch === 'function') {
+        resumeResult.catch(() => {
+          // Swallow errors to avoid unhandled promise rejections while keeping this handler synchronous.
+        });
+      }
     }
   }
   document.addEventListener('touchstart', unlockAudio, { capture: true, once: true });
