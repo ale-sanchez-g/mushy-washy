@@ -36,6 +36,21 @@ window.onload = function() {
   };
 
   const game = new Phaser.Game(config);
+
+  // iOS Safari Web Audio API unlock: resume AudioContext synchronously on first user gesture
+  function unlockAudio() {
+    if (game.sound && game.sound.context && game.sound.context.state === 'suspended') {
+      const resumeResult = game.sound.context.resume();
+      if (resumeResult && typeof resumeResult.catch === 'function') {
+        resumeResult.catch(() => {
+          // Swallow errors to avoid unhandled promise rejections while keeping this handler synchronous.
+        });
+      }
+    }
+  }
+  document.addEventListener('touchstart', unlockAudio, { capture: true, once: true });
+  document.addEventListener('click', unlockAudio, { capture: true, once: true });
+
   let graphics;
   let texts = {};
   let sloSelectionElements = []; // Store references to SLO selection UI elements
@@ -548,6 +563,12 @@ window.onload = function() {
     const scene = this;
     gameState.gamePhase = 'gameOver';
 
+    // Remove any existing input elements from previous game over screens
+    const existingInput = document.getElementById('playerNameInput');
+    if (existingInput && existingInput.parentNode) {
+      document.body.removeChild(existingInput);
+    }
+
     // Cancel all active timers to prevent level popups
     if (gameState.spawnTimerId) {
       gameState.spawnTimerId.remove();
@@ -639,7 +660,7 @@ window.onload = function() {
     inputElement.id = 'playerNameInput';
     inputElement.placeholder = 'Player Name';
     inputElement.maxLength = 20;
-    inputElement.style.position = 'absolute';
+    inputElement.style.position = 'fixed';
     inputElement.style.width = '220px';
     inputElement.style.height = '32px';
     inputElement.style.fontSize = '16px';
@@ -648,12 +669,34 @@ window.onload = function() {
     inputElement.style.borderRadius = '5px';
     inputElement.style.backgroundColor = '#fff';
     inputElement.style.color = '#000';
+    inputElement.style.zIndex = '1000';
+    inputElement.style.boxSizing = 'border-box';
+    inputElement.style.padding = '8px';
     
-    // Position the input element relative to the canvas
+    // Position the input element dynamically based on canvas and viewport scaling
     const canvas = scene.sys.game.canvas;
     const canvasRect = canvas.getBoundingClientRect();
-    inputElement.style.left = (canvasRect.left + 290) + 'px';
-    inputElement.style.top = (canvasRect.top + 395) + 'px';
+    
+    // Calculate the scale factor between game coordinates (800x600) and rendered canvas
+    const gameWidth = BaristaConfig.gameSettings.canvasWidth;
+    const gameHeight = BaristaConfig.gameSettings.canvasHeight;
+    const renderedWidth = canvasRect.width;
+    const renderedHeight = canvasRect.height;
+    const scaleX = renderedWidth / gameWidth;
+    const scaleY = renderedHeight / gameHeight;
+    
+    // Game coordinates where input should appear (centered at x=400, y=405)
+    const gameX = 400;
+    const gameY = 405;
+    
+    // Convert game coordinates to screen coordinates
+    const screenX = canvasRect.left + (gameX * scaleX);
+    const screenY = canvasRect.top + (gameY * scaleY);
+    
+    // Use transform for better centering and pixel-perfect positioning
+    inputElement.style.left = screenX + 'px';
+    inputElement.style.top = screenY + 'px';
+    inputElement.style.transform = 'translate(-50%, -50%)';
     
     document.body.appendChild(inputElement);
     inputElement.focus();

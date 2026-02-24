@@ -18,6 +18,16 @@ window.onload = function() {
     };
   
     const game = new Phaser.Game(config);
+
+    // iOS Safari Web Audio API unlock: resume AudioContext synchronously on first user gesture
+    function unlockAudio() {
+      if (game.sound && game.sound.context && game.sound.context.state === 'suspended') {
+        game.sound.context.resume().catch(() => {});
+      }
+    }
+    document.addEventListener('touchstart', unlockAudio, { capture: true, once: true });
+    document.addEventListener('click', unlockAudio, { capture: true, once: true });
+
     let cursors;
     let basket;
     let mushroom;
