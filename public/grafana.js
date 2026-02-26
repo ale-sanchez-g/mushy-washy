@@ -11,6 +11,9 @@
         version: "1.0.3",
         environment: "production",
       },
+      instrumentations: [
+        ...window.GrafanaFaroWebSdk.getWebInstrumentations(),
+      ],
     });
     // Load instrumentations at the onLoad event of the web-SDK and after the above configuration.
     // This is important because we need to ensure that the Web-SDK has been loaded and initialized before we add further instruments!
