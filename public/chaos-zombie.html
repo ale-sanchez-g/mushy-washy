@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Prevent browser zoom / scaling on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chaos Zombie - SRE Reliability Game</title>
+  <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/jpeg" href="assets/blueMushroom.jpeg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d0d1a;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    canvas {
+      display: block;
+      touch-action: none; /* prevents default scroll/zoom on touch */
+    }
+
+    /* Rotate prompt — shown only in portrait orientation */
+    #rotate-msg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0d0d1a;
+      color: #ffffff;
+      font-family: monospace;
+      font-size: 20px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      z-index: 9999;
+      gap: 16px;
+    }
+
+    @media (orientation: portrait) {
+      #rotate-msg { display: flex; }
+      canvas       { display: none; }
+    }
+  </style>
+  <script src="phaser.min.js"></script>
+  <script src="chaos-zombie.js"></script>
+  <script type="module">
+    import { getUserContext } from './modules/contextGenerator.js';
+    getUserContext();
+  </script>
+</head>
+<body>
+  <!-- Shown when device is in portrait mode -->
+  <div id="rotate-msg">
+    <div style="font-size: 48px;">📱↔️</div>
+    <div>Please rotate your device</div>
+    <div>to <strong>landscape mode</strong> to play!</div>
+  </div>
+</body>
+<script>
+  // Register Service Worker for caching Grafana scripts
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('Service Worker registration failed:', error);
+    });
+  }
+</script>
+<script src="grafana.js"></script>
+</html>

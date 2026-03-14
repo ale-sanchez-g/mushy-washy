@@ -65,6 +65,11 @@ app.get('/snake-game', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'snake-game.html'));
 });
 
+// Route for serving the chaos zombie game
+app.get('/chaos-zombie', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'chaos-zombie.html'));
+});
+
 // Serve the modules from public/modules folder
 app.use('/modules', express.static(path.join(__dirname, 'public', 'modules')));
 
