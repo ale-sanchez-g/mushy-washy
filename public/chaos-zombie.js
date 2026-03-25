@@ -39,6 +39,12 @@ window.onload = function () {
   let spawnTimer;
   let overlayItems = [];
 
+  // HTML img elements overlaid on the canvas for each live zombie
+  const zombieImgs = new Map(); // Phaser container → <img> element
+  const ZOMBIE_GIF_URL = 'https://c.tenor.com/vbkPMv40z8IAAAAC/walking-dead.gif';
+  const ZOMBIE_IMG_W   = 60;
+  const ZOMBIE_IMG_H   = 110;
+
   // ─── Phaser config ────────────────────────────────────────────────────────
   const config = {
     type: Phaser.AUTO,
@@ -65,9 +71,7 @@ window.onload = function () {
 
   // ─── Scene lifecycle ──────────────────────────────────────────────────────
 
-  function preload() {
-    this.load.gif('zombie-walk', 'https://c.tenor.com/vbkPMv40z8IAAAAC/walking-dead.gif', { asSprite: true });
-  }
+  function preload() { /* assets drawn procedurally or via HTML img overlay */ }
 
   function create() {
     scene = this;
@@ -87,14 +91,38 @@ window.onload = function () {
     this.input.on('pointerdown', handlePointerDown, this);
   }
 
+  // ─── Zombie img helpers ───────────────────────────────────────────────────
+
+  function syncZombieImg(img, x, y) {
+    const canvas = scene.game.canvas;
+    const rect   = canvas.getBoundingClientRect();
+    const sx = rect.width  / scene.scale.width;
+    const sy = rect.height / scene.scale.height;
+    img.style.left   = (rect.left + x * sx - (ZOMBIE_IMG_W * sx) / 2) + 'px';
+    img.style.top    = (rect.top  + y * sy -  ZOMBIE_IMG_H * sy)      + 'px';
+    img.style.width  = (ZOMBIE_IMG_W * sx) + 'px';
+    img.style.height = (ZOMBIE_IMG_H * sy) + 'px';
+  }
+
+  function clearZombieImgs() {
+    zombieImgs.forEach(img => img.remove());
+    zombieImgs.clear();
+  }
+
   function update() {
     if (!gameActive) return;
     const W = scene.scale.width;
-    // Remove zombies that have crossed the left boundary (escaped)
     zombieGroup.getChildren().forEach(z => {
       if (z.active && z.x < -60) {
+        // Remove img overlay before destroying container
+        const img = zombieImgs.get(z);
+        if (img) { img.remove(); zombieImgs.delete(z); }
         z.setActive(false).setVisible(false).destroy();
         onZombieEscaped(W);
+      } else if (z.active) {
+        // Keep img overlay in sync with physics position
+        const img = zombieImgs.get(z);
+        if (img) syncZombieImg(img, z.x, z.y);
       }
     });
   }
@@ -305,6 +333,7 @@ window.onload = function () {
   function showWinScreen(W, H) {
     clearOverlay();
     if (spawnTimer) spawnTimer.remove();
+    clearZombieImgs();
     gameActive = false;
     overlayBg(W, H, 0.82);
     overlayText(W / 2, H * 0.23, '🏆  YOU WIN!  🏆', '32px', '#ffdd00');
@@ -319,6 +348,7 @@ window.onload = function () {
   function showGameOver(W, H) {
     clearOverlay();
     if (spawnTimer) spawnTimer.remove();
+    clearZombieImgs();
     zombieGroup.clear(true, true);
     gameActive = false;
     overlayBg(W, H, 0.82);
@@ -346,6 +376,7 @@ window.onload = function () {
     nextCrashIndex      = 0;
     gameActive          = true;
 
+    clearZombieImgs();
     zombieGroup.clear(true, true);
     containerStates = Array(NUM_CONTAINERS).fill('up');
     updateContainerUI();
@@ -383,15 +414,11 @@ window.onload = function () {
 
     // Slight vertical variance so zombies don't all walk the same line
     const yVariance = Phaser.Math.Between(-18, 18);
+    const spawnX    = W + 30;
+    const spawnY    = zombieY + yVariance;
 
-    // Use the Walking Dead GIF sprite; flip horizontally so it faces left
-    const sprite = scene.add.sprite(0, 0, 'zombie-walk');
-    sprite.setDisplaySize(60, 110);
-    sprite.setFlipX(true);
-    sprite.play('zombie-walk');
-
-    // Wrap in a container so we can attach physics + interactivity
-    const container = scene.add.container(W + 30, zombieY + yVariance, [sprite]);
+    // Invisible container for physics + hit detection
+    const container = scene.add.container(spawnX, spawnY);
     zombieGroup.add(container);
 
     scene.physics.world.enable(container);
@@ -403,7 +430,6 @@ window.onload = function () {
     container.body.setSize(HIT_W, HIT_H);
     container.body.setOffset(-HIT_W / 2, -HIT_H);
 
-    // Make the container tappable / clickable
     container.setSize(HIT_W, HIT_H);
     container.setInteractive();
     container.on('pointerdown', () => {
@@ -411,6 +437,14 @@ window.onload = function () {
         onZombieShot(container, W, H);
       }
     });
+
+    // HTML img overlay — the GIF plays automatically in the browser
+    const img = document.createElement('img');
+    img.src = ZOMBIE_GIF_URL;
+    img.style.cssText = 'position:fixed;pointer-events:none;transform:scaleX(-1);';
+    syncZombieImg(img, spawnX, spawnY);
+    document.body.appendChild(img);
+    zombieImgs.set(container, img);
   }
 
   // ─── Shot / escape handlers ───────────────────────────────────────────────
@@ -418,6 +452,8 @@ window.onload = function () {
   function onZombieShot(zombie, W, H) {
     const zx = zombie.x;
     const zy = zombie.y;
+    const img = zombieImgs.get(zombie);
+    if (img) { img.remove(); zombieImgs.delete(zombie); }
     zombie.setActive(false).setVisible(false).destroy();
 
     score += (currentLevel + 1) * 10;

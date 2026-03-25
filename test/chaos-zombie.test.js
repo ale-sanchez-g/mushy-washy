@@ -110,6 +110,7 @@ describe('Chaos Zombie Game', () => {
       scale: mockScale,
       tweens: mockTweens,
       load: { gif: jest.fn() },
+      game: { canvas: { getBoundingClientRect: jest.fn().mockReturnValue({ left: 0, top: 0, width: 1200, height: 600 }) } },
     };
 
     global.Phaser = {
@@ -129,9 +130,16 @@ describe('Chaos Zombie Game', () => {
       onload: null,
     };
 
+    const mockImgElement = {
+      src: '',
+      style: { cssText: '', left: '', top: '', width: '', height: '' },
+      remove: jest.fn(),
+    };
     global.document = {
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
+      createElement: jest.fn().mockReturnValue(mockImgElement),
+      body: { appendChild: jest.fn() },
     };
 
     jest.resetModules();
