@@ -139,11 +139,11 @@ window.onload = function () {
     const laneTop  = zombieY - ZOMBIE_IMG_H - 10;
     const laneH    = ZOMBIE_IMG_H + 25;
     const lane = scene.add.graphics();
-    lane.fillStyle(0xf0ece4, 1); // warm off-white, close to the GIF background
+    lane.fillStyle(0xffffff, 1); // pure white — matches the GIF background exactly
     lane.fillRect(0, laneTop, W, laneH);
 
     // Subtle top/bottom edges to frame the lane
-    lane.lineStyle(1, 0xccbbaa, 0.6);
+    lane.lineStyle(1, 0xaaaaaa, 0.5);
     lane.beginPath();
     lane.moveTo(0, laneTop);
     lane.lineTo(W, laneTop);
@@ -152,7 +152,7 @@ window.onload = function () {
     lane.strokePath();
 
     scene.add.text(W / 2, laneTop + laneH + 6, '— CHAOS ZONE —', {
-      fontSize: '12px', fill: '#998877', fontFamily: 'monospace',
+      fontSize: '12px', fill: '#556655', fontFamily: 'monospace',
     }).setOrigin(0.5, 0);
   }
 
