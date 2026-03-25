@@ -382,12 +382,19 @@ window.onload = function () {
     // Slight vertical variance so zombies don't all walk the same line
     const yVariance = Phaser.Math.Between(-18, 18);
 
-    // Draw the zombie sprite procedurally
-    const gfx = scene.add.graphics();
-    drawZombie(gfx);
+    // Body/head/arms as one static graphic; legs are separate for animation
+    const gfx  = scene.add.graphics();
+    drawZombieBody(gfx);
+
+    const lleg = scene.add.graphics();
+    drawZombieLeg(lleg, -12);
+
+    const rleg = scene.add.graphics();
+    drawZombieLeg(rleg, 2);
+    rleg.y = -10; // start out of phase so legs alternate from frame 1
 
     // Wrap in a container so we can attach physics + interactivity
-    const container = scene.add.container(W + 30, zombieY + yVariance, [gfx]);
+    const container = scene.add.container(W + 30, zombieY + yVariance, [gfx, lleg, rleg]);
     zombieGroup.add(container);
 
     scene.physics.world.enable(container);
@@ -407,9 +414,34 @@ window.onload = function () {
         onZombieShot(container, W, H);
       }
     });
+
+    // ── Walking animation ──────────────────────────────────────────────────
+    // Faster zombies shuffle more frantically
+    const strideMs = Math.max(140, 400 - lvl.speed * 0.5);
+
+    // Left leg: 0 → -10 → 0 (step up and back down)
+    scene.tweens.add({
+      targets: lleg, y: -10,
+      duration: strideMs, yoyo: true, repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // Right leg: -10 → 0 → -10 (opposite phase, already offset by rleg.y = -10)
+    scene.tweens.add({
+      targets: rleg, y: 0,
+      duration: strideMs, yoyo: true, repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // Subtle body bob at double the stride rate (rises on each footfall)
+    scene.tweens.add({
+      targets: gfx, y: -3,
+      duration: strideMs, yoyo: true, repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
   }
 
-  function drawZombie(gfx) {
+  function drawZombieBody(gfx) {
     // Body
     gfx.fillStyle(0x55aa44, 1);
     gfx.fillRect(-14, -58, 28, 40);
@@ -431,11 +463,11 @@ window.onload = function () {
     gfx.fillStyle(0x55aa44, 1);
     gfx.fillRect(-30, -52, 16, 7);
     gfx.fillRect(14, -52, 16, 7);
+  }
 
-    // Legs
+  function drawZombieLeg(gfx, xOffset) {
     gfx.fillStyle(0x334433, 1);
-    gfx.fillRect(-12, -18, 10, 18);
-    gfx.fillRect(2, -18, 10, 18);
+    gfx.fillRect(xOffset, -18, 10, 18);
   }
 
   // ─── Shot / escape handlers ───────────────────────────────────────────────
