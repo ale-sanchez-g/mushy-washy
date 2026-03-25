@@ -134,17 +134,25 @@ window.onload = function () {
     bg.fillGradientStyle(0x0d0d1a, 0x0d0d1a, 0x120b28, 0x120b28, 1);
     bg.fillRect(0, 0, W, H);
 
-    // Ground line beneath zombie lane
-    const zombieY = H * ZOMBIE_Y_RATIO;
-    const ground = scene.add.graphics();
-    ground.lineStyle(2, 0x335533, 0.5);
-    ground.beginPath();
-    ground.moveTo(0, zombieY + 45);
-    ground.lineTo(W, zombieY + 45);
-    ground.strokePath();
+    // White lane strip so the zombie GIF background blends in
+    const zombieY  = H * ZOMBIE_Y_RATIO;
+    const laneTop  = zombieY - ZOMBIE_IMG_H - 10;
+    const laneH    = ZOMBIE_IMG_H + 25;
+    const lane = scene.add.graphics();
+    lane.fillStyle(0xf0ece4, 1); // warm off-white, close to the GIF background
+    lane.fillRect(0, laneTop, W, laneH);
 
-    scene.add.text(W / 2, zombieY + 55, '— CHAOS ZONE —', {
-      fontSize: '12px', fill: '#223322', fontFamily: 'monospace',
+    // Subtle top/bottom edges to frame the lane
+    lane.lineStyle(1, 0xccbbaa, 0.6);
+    lane.beginPath();
+    lane.moveTo(0, laneTop);
+    lane.lineTo(W, laneTop);
+    lane.moveTo(0, laneTop + laneH);
+    lane.lineTo(W, laneTop + laneH);
+    lane.strokePath();
+
+    scene.add.text(W / 2, laneTop + laneH + 6, '— CHAOS ZONE —', {
+      fontSize: '12px', fill: '#998877', fontFamily: 'monospace',
     }).setOrigin(0.5, 0);
   }
 
