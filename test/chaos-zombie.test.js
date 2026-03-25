@@ -34,9 +34,18 @@ describe('Chaos Zombie Game', () => {
       destroy: jest.fn().mockReturnThis(),
     });
 
+    const mockSprite = () => ({
+      setDisplaySize: jest.fn().mockReturnThis(),
+      setFlipX: jest.fn().mockReturnThis(),
+      play: jest.fn().mockReturnThis(),
+      setOrigin: jest.fn().mockReturnThis(),
+      destroy: jest.fn().mockReturnThis(),
+    });
+
     mockAdd = {
       text: jest.fn().mockImplementation(() => mockText()),
       graphics: jest.fn().mockImplementation(() => mockGraphics()),
+      sprite: jest.fn().mockImplementation(() => mockSprite()),
       container: jest.fn().mockImplementation((x, y, children) => ({
         x,
         y,
@@ -100,6 +109,7 @@ describe('Chaos Zombie Game', () => {
       input: mockInput,
       scale: mockScale,
       tweens: mockTweens,
+      load: { gif: jest.fn() },
     };
 
     global.Phaser = {

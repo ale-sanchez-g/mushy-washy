@@ -65,7 +65,9 @@ window.onload = function () {
 
   // ─── Scene lifecycle ──────────────────────────────────────────────────────
 
-  function preload() { /* all assets are drawn procedurally */ }
+  function preload() {
+    this.load.gif('zombie-walk', 'https://c.tenor.com/vbkPMv40z8IAAAAC/walking-dead.gif', { asSprite: true });
+  }
 
   function create() {
     scene = this;
@@ -382,27 +384,22 @@ window.onload = function () {
     // Slight vertical variance so zombies don't all walk the same line
     const yVariance = Phaser.Math.Between(-18, 18);
 
-    // Body/head/arms as one static graphic; legs are separate for animation
-    const gfx  = scene.add.graphics();
-    drawZombieBody(gfx);
-
-    const lleg = scene.add.graphics();
-    drawZombieLeg(lleg, -12);
-
-    const rleg = scene.add.graphics();
-    drawZombieLeg(rleg, 2);
-    rleg.y = -10; // start out of phase so legs alternate from frame 1
+    // Use the Walking Dead GIF sprite; flip horizontally so it faces left
+    const sprite = scene.add.sprite(0, 0, 'zombie-walk');
+    sprite.setDisplaySize(60, 110);
+    sprite.setFlipX(true);
+    sprite.play('zombie-walk');
 
     // Wrap in a container so we can attach physics + interactivity
-    const container = scene.add.container(W + 30, zombieY + yVariance, [gfx, lleg, rleg]);
+    const container = scene.add.container(W + 30, zombieY + yVariance, [sprite]);
     zombieGroup.add(container);
 
     scene.physics.world.enable(container);
     container.body.setVelocityX(-lvl.speed);
     container.body.setAllowGravity(false);
 
-    const HIT_W = 38;
-    const HIT_H = 70;
+    const HIT_W = 50;
+    const HIT_H = 100;
     container.body.setSize(HIT_W, HIT_H);
     container.body.setOffset(-HIT_W / 2, -HIT_H);
 
@@ -414,60 +411,6 @@ window.onload = function () {
         onZombieShot(container, W, H);
       }
     });
-
-    // ── Walking animation ──────────────────────────────────────────────────
-    // Faster zombies shuffle more frantically
-    const strideMs = Math.max(140, 400 - lvl.speed * 0.5);
-
-    // Left leg: 0 → -10 → 0 (step up and back down)
-    scene.tweens.add({
-      targets: lleg, y: -10,
-      duration: strideMs, yoyo: true, repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
-
-    // Right leg: -10 → 0 → -10 (opposite phase, already offset by rleg.y = -10)
-    scene.tweens.add({
-      targets: rleg, y: 0,
-      duration: strideMs, yoyo: true, repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
-
-    // Subtle body bob at double the stride rate (rises on each footfall)
-    scene.tweens.add({
-      targets: gfx, y: -3,
-      duration: strideMs, yoyo: true, repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
-  }
-
-  function drawZombieBody(gfx) {
-    // Body
-    gfx.fillStyle(0x55aa44, 1);
-    gfx.fillRect(-14, -58, 28, 40);
-
-    // Head
-    gfx.fillStyle(0x88cc77, 1);
-    gfx.fillCircle(0, -70, 14);
-
-    // Eyes (red)
-    gfx.fillStyle(0xff2222, 1);
-    gfx.fillRect(-7, -74, 4, 4);
-    gfx.fillRect(3, -74, 4, 4);
-
-    // Mouth
-    gfx.fillStyle(0x223322, 1);
-    gfx.fillRect(-6, -65, 12, 3);
-
-    // Arms outstretched toward the player (left)
-    gfx.fillStyle(0x55aa44, 1);
-    gfx.fillRect(-30, -52, 16, 7);
-    gfx.fillRect(14, -52, 16, 7);
-  }
-
-  function drawZombieLeg(gfx, xOffset) {
-    gfx.fillStyle(0x334433, 1);
-    gfx.fillRect(xOffset, -18, 10, 18);
   }
 
   // ─── Shot / escape handlers ───────────────────────────────────────────────
