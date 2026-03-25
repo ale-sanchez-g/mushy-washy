@@ -39,6 +39,12 @@ window.onload = function () {
   let spawnTimer;
   let overlayItems = [];
 
+  // HTML img elements overlaid on the canvas for each live zombie
+  const zombieImgs = new Map(); // Phaser container → <img> element
+  const ZOMBIE_GIF_URL = 'https://c.tenor.com/vbkPMv40z8IAAAAC/walking-dead.gif';
+  const ZOMBIE_IMG_W   = 60;
+  const ZOMBIE_IMG_H   = 110;
+
   // ─── Phaser config ────────────────────────────────────────────────────────
   const config = {
     type: Phaser.AUTO,
@@ -65,7 +71,7 @@ window.onload = function () {
 
   // ─── Scene lifecycle ──────────────────────────────────────────────────────
 
-  function preload() { /* all assets are drawn procedurally */ }
+  function preload() { /* assets drawn procedurally or via HTML img overlay */ }
 
   function create() {
     scene = this;
@@ -85,14 +91,38 @@ window.onload = function () {
     this.input.on('pointerdown', handlePointerDown, this);
   }
 
+  // ─── Zombie img helpers ───────────────────────────────────────────────────
+
+  function syncZombieImg(img, x, y) {
+    const canvas = scene.game.canvas;
+    const rect   = canvas.getBoundingClientRect();
+    const sx = rect.width  / scene.scale.width;
+    const sy = rect.height / scene.scale.height;
+    img.style.left   = (rect.left + x * sx - (ZOMBIE_IMG_W * sx) / 2) + 'px';
+    img.style.top    = (rect.top  + y * sy -  ZOMBIE_IMG_H * sy)      + 'px';
+    img.style.width  = (ZOMBIE_IMG_W * sx) + 'px';
+    img.style.height = (ZOMBIE_IMG_H * sy) + 'px';
+  }
+
+  function clearZombieImgs() {
+    zombieImgs.forEach(img => img.remove());
+    zombieImgs.clear();
+  }
+
   function update() {
     if (!gameActive) return;
     const W = scene.scale.width;
-    // Remove zombies that have crossed the left boundary (escaped)
     zombieGroup.getChildren().forEach(z => {
       if (z.active && z.x < -60) {
+        // Remove img overlay before destroying container
+        const img = zombieImgs.get(z);
+        if (img) { img.remove(); zombieImgs.delete(z); }
         z.setActive(false).setVisible(false).destroy();
         onZombieEscaped(W);
+      } else if (z.active) {
+        // Keep img overlay in sync with physics position
+        const img = zombieImgs.get(z);
+        if (img) syncZombieImg(img, z.x, z.y);
       }
     });
   }
@@ -104,17 +134,26 @@ window.onload = function () {
     bg.fillGradientStyle(0x0d0d1a, 0x0d0d1a, 0x120b28, 0x120b28, 1);
     bg.fillRect(0, 0, W, H);
 
-    // Ground line beneath zombie lane
-    const zombieY = H * ZOMBIE_Y_RATIO;
-    const ground = scene.add.graphics();
-    ground.lineStyle(2, 0x335533, 0.5);
-    ground.beginPath();
-    ground.moveTo(0, zombieY + 45);
-    ground.lineTo(W, zombieY + 45);
-    ground.strokePath();
+    // White lane strip so the zombie GIF background blends in.
+    // Must cover ZOMBIE_IMG_H + yVariance (±18) + generous buffer on both sides.
+    const zombieY  = H * ZOMBIE_Y_RATIO;
+    const laneTop  = zombieY - ZOMBIE_IMG_H - 40;
+    const laneH    = ZOMBIE_IMG_H + 70;
+    const lane = scene.add.graphics();
+    lane.fillStyle(0xffffff, 1); // pure white — matches the GIF background exactly
+    lane.fillRect(0, laneTop, W, laneH);
 
-    scene.add.text(W / 2, zombieY + 55, '— CHAOS ZONE —', {
-      fontSize: '12px', fill: '#223322', fontFamily: 'monospace',
+    // Subtle top/bottom edges to frame the lane
+    lane.lineStyle(1, 0xaaaaaa, 0.5);
+    lane.beginPath();
+    lane.moveTo(0, laneTop);
+    lane.lineTo(W, laneTop);
+    lane.moveTo(0, laneTop + laneH);
+    lane.lineTo(W, laneTop + laneH);
+    lane.strokePath();
+
+    scene.add.text(W / 2, laneTop + laneH + 6, '— CHAOS ZONE —', {
+      fontSize: '12px', fill: '#556655', fontFamily: 'monospace',
     }).setOrigin(0.5, 0);
   }
 
@@ -303,6 +342,7 @@ window.onload = function () {
   function showWinScreen(W, H) {
     clearOverlay();
     if (spawnTimer) spawnTimer.remove();
+    clearZombieImgs();
     gameActive = false;
     overlayBg(W, H, 0.82);
     overlayText(W / 2, H * 0.23, '🏆  YOU WIN!  🏆', '32px', '#ffdd00');
@@ -317,6 +357,7 @@ window.onload = function () {
   function showGameOver(W, H) {
     clearOverlay();
     if (spawnTimer) spawnTimer.remove();
+    clearZombieImgs();
     zombieGroup.clear(true, true);
     gameActive = false;
     overlayBg(W, H, 0.82);
@@ -344,6 +385,7 @@ window.onload = function () {
     nextCrashIndex      = 0;
     gameActive          = true;
 
+    clearZombieImgs();
     zombieGroup.clear(true, true);
     containerStates = Array(NUM_CONTAINERS).fill('up');
     updateContainerUI();
@@ -381,25 +423,22 @@ window.onload = function () {
 
     // Slight vertical variance so zombies don't all walk the same line
     const yVariance = Phaser.Math.Between(-18, 18);
+    const spawnX    = W + 30;
+    const spawnY    = zombieY + yVariance;
 
-    // Draw the zombie sprite procedurally
-    const gfx = scene.add.graphics();
-    drawZombie(gfx);
-
-    // Wrap in a container so we can attach physics + interactivity
-    const container = scene.add.container(W + 30, zombieY + yVariance, [gfx]);
+    // Invisible container for physics + hit detection
+    const container = scene.add.container(spawnX, spawnY);
     zombieGroup.add(container);
 
     scene.physics.world.enable(container);
     container.body.setVelocityX(-lvl.speed);
     container.body.setAllowGravity(false);
 
-    const HIT_W = 38;
-    const HIT_H = 70;
+    const HIT_W = 50;
+    const HIT_H = 100;
     container.body.setSize(HIT_W, HIT_H);
     container.body.setOffset(-HIT_W / 2, -HIT_H);
 
-    // Make the container tappable / clickable
     container.setSize(HIT_W, HIT_H);
     container.setInteractive();
     container.on('pointerdown', () => {
@@ -407,35 +446,14 @@ window.onload = function () {
         onZombieShot(container, W, H);
       }
     });
-  }
 
-  function drawZombie(gfx) {
-    // Body
-    gfx.fillStyle(0x55aa44, 1);
-    gfx.fillRect(-14, -58, 28, 40);
-
-    // Head
-    gfx.fillStyle(0x88cc77, 1);
-    gfx.fillCircle(0, -70, 14);
-
-    // Eyes (red)
-    gfx.fillStyle(0xff2222, 1);
-    gfx.fillRect(-7, -74, 4, 4);
-    gfx.fillRect(3, -74, 4, 4);
-
-    // Mouth
-    gfx.fillStyle(0x223322, 1);
-    gfx.fillRect(-6, -65, 12, 3);
-
-    // Arms outstretched toward the player (left)
-    gfx.fillStyle(0x55aa44, 1);
-    gfx.fillRect(-30, -52, 16, 7);
-    gfx.fillRect(14, -52, 16, 7);
-
-    // Legs
-    gfx.fillStyle(0x334433, 1);
-    gfx.fillRect(-12, -18, 10, 18);
-    gfx.fillRect(2, -18, 10, 18);
+    // HTML img overlay — the GIF plays automatically in the browser
+    const img = document.createElement('img');
+    img.src = ZOMBIE_GIF_URL;
+    img.style.cssText = 'position:fixed;pointer-events:none;transform:scaleX(-1);';
+    syncZombieImg(img, spawnX, spawnY);
+    document.body.appendChild(img);
+    zombieImgs.set(container, img);
   }
 
   // ─── Shot / escape handlers ───────────────────────────────────────────────
@@ -443,6 +461,8 @@ window.onload = function () {
   function onZombieShot(zombie, W, H) {
     const zx = zombie.x;
     const zy = zombie.y;
+    const img = zombieImgs.get(zombie);
+    if (img) { img.remove(); zombieImgs.delete(zombie); }
     zombie.setActive(false).setVisible(false).destroy();
 
     score += (currentLevel + 1) * 10;
@@ -480,6 +500,29 @@ window.onload = function () {
       targets: flash, alpha: 0, duration: 500,
       onComplete: () => flash.destroy(),
     });
+
+    // Zombie escaped → ALL containers crash (chaos cascade!)
+    containerStates = Array(NUM_CONTAINERS).fill('crashed');
+    updateContainerUI();
+
+    const restartMs = RESTART_TIMES_MS[currentLevel] !== undefined
+      ? RESTART_TIMES_MS[currentLevel]
+      : 1500;
+
+    // Stagger each container's restart so they come back one by one
+    for (let i = 0; i < NUM_CONTAINERS; i++) {
+      const staggerMs = restartMs + i * 400;
+      scene.time.delayedCall(staggerMs * 0.4, () => {
+        if (containerStates[i] === 'crashed') {
+          containerStates[i] = 'restarting';
+          updateContainerUI();
+        }
+      });
+      scene.time.delayedCall(staggerMs, () => {
+        containerStates[i] = 'up';
+        updateContainerUI();
+      });
+    }
 
     if (lives <= 0) {
       gameActive = false;
