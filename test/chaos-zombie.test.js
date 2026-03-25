@@ -291,4 +291,67 @@ describe('Chaos Zombie Game', () => {
     const config = global.Phaser.Game.mock.calls[0][0];
     expect(() => config.scene.preload.call(mockScene)).not.toThrow();
   });
+
+  // ─── Zombie escaped: all containers crash ─────────────────────────────────
+
+  test('when a zombie escapes all 8 containers immediately crash and schedule restarts', () => {
+    require('../public/chaos-zombie');
+    global.window.onload();
+    const config = global.Phaser.Game.mock.calls[0][0];
+
+    // Capture text objects so we can find the start button
+    const textObjects = [];
+    mockAdd.text.mockImplementation(() => {
+      const t = {
+        setOrigin: jest.fn().mockReturnThis(),
+        setPosition: jest.fn().mockReturnThis(),
+        setInteractive: jest.fn().mockReturnThis(),
+        setText: jest.fn().mockReturnThis(),
+        on: jest.fn().mockReturnThis(),
+        destroy: jest.fn().mockReturnThis(),
+      };
+      textObjects.push(t);
+      return t;
+    });
+
+    config.scene.create.call(mockScene);
+
+    // Find the start-screen button (first text with a 'pointerdown' listener)
+    let startHandler = null;
+    for (const t of textObjects) {
+      for (const [event, handler] of t.on.mock.calls) {
+        if (event === 'pointerdown') { startHandler = handler; break; }
+      }
+      if (startHandler) break;
+    }
+    expect(startHandler).toBeDefined();
+
+    // Clicking the start button calls startLevel(0) → sets gameActive = true
+    startHandler();
+
+    // Override the zombie group so update() sees an escaped zombie
+    const zombieGroup = mockPhysics.add.group.mock.results[0].value;
+    const fakeZombie = {
+      active: true,
+      x: -100,
+      setActive: jest.fn().mockReturnThis(),
+      setVisible: jest.fn().mockReturnThis(),
+      destroy: jest.fn(),
+    };
+    zombieGroup.getChildren.mockReturnValue([fakeZombie]);
+
+    // Track delayedCalls triggered by the escape
+    const delayedCalls = [];
+    mockTime.delayedCall.mockImplementation((delay, cb) => {
+      delayedCalls.push({ delay, cb });
+      return { remove: jest.fn() };
+    });
+
+    // Trigger the escape detection
+    config.scene.update.call(mockScene);
+
+    // The escape handler schedules 2 delayed calls per container (restarting + up)
+    // for all 8 containers = 16 total scheduled calls
+    expect(delayedCalls.length).toBeGreaterThanOrEqual(16);
+  });
 });

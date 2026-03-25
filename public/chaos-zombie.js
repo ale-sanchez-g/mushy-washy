@@ -481,6 +481,29 @@ window.onload = function () {
       onComplete: () => flash.destroy(),
     });
 
+    // Zombie escaped → ALL containers crash (chaos cascade!)
+    containerStates = Array(NUM_CONTAINERS).fill('crashed');
+    updateContainerUI();
+
+    const restartMs = RESTART_TIMES_MS[currentLevel] !== undefined
+      ? RESTART_TIMES_MS[currentLevel]
+      : 1500;
+
+    // Stagger each container's restart so they come back one by one
+    for (let i = 0; i < NUM_CONTAINERS; i++) {
+      const staggerMs = restartMs + i * 400;
+      scene.time.delayedCall(staggerMs * 0.4, () => {
+        if (containerStates[i] === 'crashed') {
+          containerStates[i] = 'restarting';
+          updateContainerUI();
+        }
+      });
+      scene.time.delayedCall(staggerMs, () => {
+        containerStates[i] = 'up';
+        updateContainerUI();
+      });
+    }
+
     if (lives <= 0) {
       gameActive = false;
       scene.time.delayedCall(600, () => showGameOver(W, H));
