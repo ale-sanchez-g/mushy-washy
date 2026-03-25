@@ -134,10 +134,11 @@ window.onload = function () {
     bg.fillGradientStyle(0x0d0d1a, 0x0d0d1a, 0x120b28, 0x120b28, 1);
     bg.fillRect(0, 0, W, H);
 
-    // White lane strip so the zombie GIF background blends in
+    // White lane strip so the zombie GIF background blends in.
+    // Must cover ZOMBIE_IMG_H + yVariance (±18) + generous buffer on both sides.
     const zombieY  = H * ZOMBIE_Y_RATIO;
-    const laneTop  = zombieY - ZOMBIE_IMG_H - 10;
-    const laneH    = ZOMBIE_IMG_H + 25;
+    const laneTop  = zombieY - ZOMBIE_IMG_H - 40;
+    const laneH    = ZOMBIE_IMG_H + 70;
     const lane = scene.add.graphics();
     lane.fillStyle(0xffffff, 1); // pure white — matches the GIF background exactly
     lane.fillRect(0, laneTop, W, laneH);
